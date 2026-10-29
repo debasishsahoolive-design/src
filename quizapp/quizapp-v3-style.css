@@ -1357,3 +1357,45 @@ html.mh-dark body.dh-quiz-active #dh-quiz-nav-panel .dh-nav-icon:disabled {
 .mh-chapter-quiz.mh-chapter-ready {
     visibility: visible;
 }
+
+/* Chapter assessment loading placeholder; no core or backend changes. */
+.mh-chapter-quiz[data-mode="chapter"]:not(.mh-chapter-ready) {
+  position: relative;
+  min-height: 170px;
+}
+.mh-chapter-quiz[data-mode="chapter"]:not(.mh-chapter-ready)::before {
+  content: "Preparing Your Quiz Interface…";
+  visibility: visible;
+  position: absolute;
+  top: 22px; left: 12px; right: 12px;
+  display: block;
+  padding: 24px 18px 40px;
+  border: 1px solid #99d8d0;
+  border-radius: 14px;
+  background: #f0fdfa;
+  color: #123c4a;
+  font: 700 clamp(16px, 3vw, 20px)/1.5 "Segoe UI", Arial, sans-serif;
+  text-align: center;
+  box-shadow: 0 5px 18px rgba(15, 23, 42, .06);
+}
+.mh-chapter-quiz[data-mode="chapter"]:not(.mh-chapter-ready)::after {
+  content: "Please wait while we load your chapter assessment.";
+  visibility: visible;
+  position: absolute;
+  top: 93px; left: 18px; right: 18px;
+  color: #475569;
+  font: 400 14px/1.5 "Segoe UI", Arial, sans-serif;
+  text-align: center;
+}
+html.mh-dark .mh-chapter-quiz[data-mode="chapter"]:not(.mh-chapter-ready)::before {
+  background: #142c38;
+  color: #ccfbf1;
+  border-color: #2d6b69;
+}
+html.mh-dark .mh-chapter-quiz[data-mode="chapter"]:not(.mh-chapter-ready)::after {
+  color: #cbd5e1;
+}
+@media print {
+  .mh-chapter-quiz[data-mode="chapter"]:not(.mh-chapter-ready)::before,
+  .mh-chapter-quiz[data-mode="chapter"]:not(.mh-chapter-ready)::after { display: none !important; }
+}
