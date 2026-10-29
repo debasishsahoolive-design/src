@@ -54,10 +54,19 @@
         await dh_loadMetadata();
         if (!select(chapterEl, ch)) throw Error('Chapter not found: ' + ch);
         if (typeof dh_loadSets !== 'function') throw Error('Set loader unavailable');
-        await dh_loadSets();
+        await dh_loadSets(); // Core already loads the initial question pool.
+        var initiallySelectedSet = setEl.value;
         if (!select(setEl, set)) throw Error('Set not found: ' + set);
-        if (typeof dh_filterPoolHint !== 'function') throw Error('Question pool loader unavailable');
-        await dh_filterPoolHint();
+        // Refetch only when the requested set differs from the set loaded by core.
+        // For a chapter with one set, 'ALL' and that one set have the same pool.
+        var availableSets = Array.from(setEl.options).map(function (o) { return o.value; })
+          .filter(function (v) { return v && v !== 'ALL'; });
+        var samePool = initiallySelectedSet === set ||
+          (set === 'ALL' && availableSets.length === 1 && initiallySelectedSet === availableSets[0]);
+        if (!samePool) {
+          if (typeof dh_filterPoolHint !== 'function') throw Error('Question pool loader unavailable');
+          await dh_filterPoolHint();
+        }
 
         classEl.disabled = true;
         chapterEl.disabled = true;
