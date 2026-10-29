@@ -1343,3 +1343,17 @@ html.mh-dark body.dh-quiz-active #dh-quiz-nav-panel .dh-nav-icon:disabled {
   cursor:not-allowed !important;
 }
 @media print { #dh-quiz-nav-panel { display:none !important; } }
+/* =====================================================
+   Mathematics Hub QuizApp V3
+   Prevent full portal dashboard flashing on chapter pages
+   ===================================================== */
+
+/* Hide the chapter quiz until the chapter adapter is ready */
+.mh-chapter-quiz:not(.mh-chapter-ready) {
+    visibility: hidden;
+}
+
+/* Display the chapter quiz after initialization */
+.mh-chapter-quiz.mh-chapter-ready {
+    visibility: visible;
+}
