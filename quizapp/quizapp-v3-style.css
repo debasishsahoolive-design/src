@@ -1476,3 +1476,91 @@ html.mh-dark .mh-chapter-quiz[data-mode="chapter"]:not(.mh-chapter-ready)::after
     overflow-wrap: break-word;
   }
 }
+
+
+/* MH V3 chapter loading — compact card, slightly lower on the page.
+   Override earlier placeholder dimensions without touching the chapter adapter. */
+.mh-chapter-quiz[data-mode="chapter"]:not(.mh-chapter-ready) {
+  min-height: 0 !important;
+  height: auto !important;
+  margin-top: clamp(32px, 7vh, 92px) !important;
+  margin-bottom: 18px !important;
+  padding: 0 10px !important;
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-rows: auto auto;
+  row-gap: 12px;
+  justify-items: center;
+  align-content: center;
+  background: transparent !important;
+}
+.mh-chapter-quiz[data-mode="chapter"]:not(.mh-chapter-ready)::before {
+  position: relative !important;
+  grid-column: 1;
+  grid-row: 1;
+  inset: auto !important;
+  width: 100% !important;
+  min-height: 0 !important;
+  padding: 22px 16px 80px !important;
+  border-radius: 16px !important;
+  font-size: clamp(17px, 4.3vw, 21px) !important;
+  line-height: 1.4 !important;
+}
+.mh-chapter-quiz[data-mode="chapter"]:not(.mh-chapter-ready)::after {
+  position: absolute !important;
+  top: auto !important;
+  bottom: 24px !important;
+  left: 28px !important;
+  right: 28px !important;
+  width: auto !important;
+  margin: 0 !important;
+  font-size: clamp(13px, 3.6vw, 15px) !important;
+  line-height: 1.5 !important;
+}
+@media (max-width: 480px) {
+  .mh-chapter-quiz[data-mode="chapter"]:not(.mh-chapter-ready) {
+    margin-top: clamp(26px, 5vh, 58px) !important;
+    padding: 0 4px !important;
+  }
+  .mh-chapter-quiz[data-mode="chapter"]:not(.mh-chapter-ready)::before {
+    padding: 20px 12px 88px !important;
+  }
+  .mh-chapter-quiz[data-mode="chapter"]:not(.mh-chapter-ready)::after {
+    left: 22px !important;
+    right: 22px !important;
+    bottom: 23px !important;
+  }
+}
+
+/* Chapter registration-first loading: show student fields immediately, no waiting card. */
+.mh-chapter-quiz[data-mode="chapter"].mh-chapter-registering:not(.mh-chapter-ready) {
+  visibility: visible !important;
+  min-height: 0 !important;
+}
+.mh-chapter-quiz[data-mode="chapter"].mh-chapter-registering::before,
+.mh-chapter-quiz[data-mode="chapter"].mh-chapter-registering::after {
+  content: none !important;
+  display: none !important;
+}
+.mh-chapter-quiz[data-mode="chapter"] .mh-v3-chapter-note {
+  box-sizing: border-box;
+  max-width: 100%;
+  margin: 0 0 14px;
+  padding: 10px 14px;
+  border: 1px solid #99d8d0;
+  border-radius: 10px;
+  background: #f0fdfa;
+  color: #123c4a;
+  font: 600 14px/1.5 "Segoe UI", Arial, sans-serif;
+  overflow-wrap: anywhere;
+}
+html.mh-dark .mh-chapter-quiz[data-mode="chapter"] .mh-v3-chapter-note {
+  background: #142c38;
+  border-color: #2d6b69;
+  color: #ccfbf1;
+}
+.mh-chapter-quiz[data-mode="chapter"] #dh-student-pool-count:disabled,
+.mh-chapter-quiz[data-mode="chapter"] #dh-start-quiz-btn:disabled {
+  opacity: .52 !important;
+  cursor: not-allowed !important;
+}

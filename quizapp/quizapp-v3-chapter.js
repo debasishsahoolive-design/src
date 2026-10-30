@@ -15,6 +15,10 @@
         host.insertBefore(note, host.firstChild);
       }
       note.textContent = 'Chapter setup failed: ' + message;
+      var input = host.querySelector('#dh-student-pool-count');
+      var button = host.querySelector('#dh-start-quiz-btn');
+      if (input) input.disabled = true;
+      if (button) button.disabled = true;
       if (error) console.error('QuizApp V3 chapter:', error);
     }
 
@@ -28,6 +32,8 @@
     }
 
     host.dataset.mhChapterInitialized = '1';
+    // Show registration immediately while chapter metadata and questions load.
+    host.classList.add('mh-chapter-registering');
     var cls = host.dataset.class || '';
     var ch = host.dataset.chapter || '';
     var set = host.dataset.set || 'ALL';
@@ -38,6 +44,25 @@
     note.className = 'mh-v3-chapter-note';
     note.textContent = 'Loading chapter quiz\u2026';
     host.insertBefore(note, host.firstChild);
+    note.setAttribute('role', 'status');
+    note.setAttribute('aria-live', 'polite');
+    note.textContent = 'Loading question pool… You can enter your details now.';
+
+    var dash = host.querySelector('#dh-quiz-config-dashboard');
+    if (dash) {
+      var fields = dash.querySelector('.dh-dashboard-fields');
+      if (fields) fields.style.setProperty('display', 'none', 'important');
+      var subtitle = dash.querySelector('.dh-dashboard-subtitle');
+      if (subtitle) subtitle.textContent = 'Enter your details while we prepare the questions.';
+      var steps = dash.querySelector('.dh-dashboard-steps');
+      if (steps) steps.style.display = 'none';
+    }
+    var countInput = host.querySelector('#dh-student-pool-count');
+    var startButton = host.querySelector('#dh-start-quiz-btn');
+    var poolHint = host.querySelector('#dh-available-pool-hint');
+    if (countInput) countInput.disabled = true;
+    if (startButton) startButton.disabled = true;
+    if (poolHint) poolHint.textContent = 'Loading question pool…';
 
     function select(el, val) {
       if (!el) return false;
@@ -71,16 +96,19 @@
         classEl.disabled = true;
         chapterEl.disabled = true;
         setEl.disabled = true;
-        var dash = host.querySelector('#dh-quiz-config-dashboard');
-        if (dash) {
-          var fields = dash.querySelector('.dh-dashboard-fields');
-          if (fields) fields.style.setProperty('display', 'none', 'important');
-          var subtitle = dash.querySelector('.dh-dashboard-subtitle');
-          if (subtitle) subtitle.textContent = 'Enter your details and choose the number of questions to begin.';
-          var steps = dash.querySelector('.dh-dashboard-steps');
-          if (steps) steps.style.display = 'none';
+        // The core updates the pool hint after question retrieval finishes.
+        // Unlock only if the confirmed pool contains at least one question.
+        var hintText = poolHint ? poolHint.textContent : '';
+        var match = hintText.match(/Available pool:\s*(\d+)\s*questions?/i);
+        var available = match ? Number(match[1]) : 0;
+        if (!available) throw Error('Question pool is unavailable. Please refresh to retry.');
+        if (countInput) {
+          countInput.max = String(Math.min(30, available));
+          countInput.value = String(Math.min(10, available));
+          countInput.disabled = false;
         }
-        note.textContent = [cls === 'Class_11' ? 'Class XI' : 'Class XII', ch, set === 'ALL' ? 'All Sets' : set].join(' \u00B7 ');
+        if (startButton) startButton.disabled = false;
+        note.textContent = 'Question pool ready. Enter the number of questions and start when ready.';
         // Reveal only after all chapter-specific changes are complete.
         host.classList.add('mh-chapter-ready');
       } catch (err) {
