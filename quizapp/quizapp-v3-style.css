@@ -1358,34 +1358,66 @@ html.mh-dark body.dh-quiz-active #dh-quiz-nav-panel .dh-nav-icon:disabled {
     visibility: visible;
 }
 
-/* Chapter assessment loading placeholder; no core or backend changes. */
+/* Chapter assessment loading placeholder: responsive, no backend/JS changes. */
 .mh-chapter-quiz[data-mode="chapter"]:not(.mh-chapter-ready) {
   position: relative;
-  min-height: 170px;
+  min-height: 240px;
 }
 .mh-chapter-quiz[data-mode="chapter"]:not(.mh-chapter-ready)::before {
   content: "Preparing Your Quiz Interface…";
   visibility: visible;
   position: absolute;
-  top: 22px; left: 12px; right: 12px;
+  top: 22px;
+  left: 12px;
+  right: 12px;
   display: block;
-  padding: 24px 18px 40px;
+  box-sizing: border-box;
+  min-width: 0;
+  min-height: 205px;
+  padding: 24px 16px 112px;
   border: 1px solid #99d8d0;
   border-radius: 14px;
   background: #f0fdfa;
   color: #123c4a;
-  font: 700 clamp(16px, 3vw, 20px)/1.5 "Segoe UI", Arial, sans-serif;
+  font: 700 clamp(16px, 3vw, 20px)/1.4 "Segoe UI", Arial, sans-serif;
   text-align: center;
+  white-space: normal;
+  overflow-wrap: anywhere;
   box-shadow: 0 5px 18px rgba(15, 23, 42, .06);
 }
 .mh-chapter-quiz[data-mode="chapter"]:not(.mh-chapter-ready)::after {
   content: "Please wait while we load your chapter assessment.";
   visibility: visible;
   position: absolute;
-  top: 93px; left: 18px; right: 18px;
+  top: 128px;
+  left: 28px;
+  right: 28px;
+  display: block;
+  box-sizing: border-box;
   color: #475569;
-  font: 400 14px/1.5 "Segoe UI", Arial, sans-serif;
+  font: 400 clamp(13px, 2.8vw, 14px)/1.5 "Segoe UI", Arial, sans-serif;
   text-align: center;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+@media (max-width: 480px) {
+  .mh-chapter-quiz[data-mode="chapter"]:not(.mh-chapter-ready) {
+    min-height: 250px;
+  }
+  .mh-chapter-quiz[data-mode="chapter"]:not(.mh-chapter-ready)::before {
+    top: 16px;
+    left: 8px;
+    right: 8px;
+    min-height: 220px;
+    padding: 24px 12px 126px;
+    font-size: clamp(16px, 4.5vw, 19px);
+  }
+  .mh-chapter-quiz[data-mode="chapter"]:not(.mh-chapter-ready)::after {
+    top: 129px;
+    left: 24px;
+    right: 24px;
+    font-size: clamp(13px, 3.5vw, 15px);
+  }
 }
 html.mh-dark .mh-chapter-quiz[data-mode="chapter"]:not(.mh-chapter-ready)::before {
   background: #142c38;
