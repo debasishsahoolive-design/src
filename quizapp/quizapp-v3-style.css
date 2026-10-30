@@ -1431,3 +1431,48 @@ html.mh-dark .mh-chapter-quiz[data-mode="chapter"]:not(.mh-chapter-ready)::after
   .mh-chapter-quiz[data-mode="chapter"]:not(.mh-chapter-ready)::before,
   .mh-chapter-quiz[data-mode="chapter"]:not(.mh-chapter-ready)::after { display: none !important; }
 }
+
+
+/* MH V3 final mobile polish — compact chapter loading and clear title toggle. */
+.mh-chapter-quiz[data-mode="chapter"]:not(.mh-chapter-ready) {
+  min-height: 188px !important;
+}
+.mh-chapter-quiz[data-mode="chapter"]:not(.mh-chapter-ready)::before {
+  top: 12px !important;
+  left: 12px !important;
+  right: 12px !important;
+  min-height: 156px !important;
+  padding: 23px 14px 83px !important;
+}
+.mh-chapter-quiz[data-mode="chapter"]:not(.mh-chapter-ready)::after {
+  top: 89px !important;
+  left: 28px !important;
+  right: 28px !important;
+}
+@media (max-width: 600px) {
+  .mh-chapter-quiz[data-mode="chapter"]:not(.mh-chapter-ready) {
+    min-height: 195px !important;
+  }
+  .mh-chapter-quiz[data-mode="chapter"]:not(.mh-chapter-ready)::before {
+    top: 12px !important;
+    left: 8px !important;
+    right: 8px !important;
+    min-height: 164px !important;
+    padding: 22px 12px 88px !important;
+    font-size: clamp(16px, 4.3vw, 19px) !important;
+  }
+  .mh-chapter-quiz[data-mode="chapter"]:not(.mh-chapter-ready)::after {
+    top: 87px !important;
+    left: 22px !important;
+    right: 22px !important;
+    font-size: clamp(13px, 3.5vw, 15px) !important;
+    line-height: 1.45 !important;
+  }
+  /* Reserve room for the floating dark-mode switch beside the chapter title. */
+  body:has(.mh-chapter-quiz[data-mode="chapter"]) .post-body > h1:first-of-type,
+  body:has(.mh-chapter-quiz[data-mode="chapter"]) .post-body > h2:first-of-type {
+    padding-right: 68px !important;
+    box-sizing: border-box !important;
+    overflow-wrap: break-word;
+  }
+}
