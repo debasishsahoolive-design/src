@@ -561,7 +561,14 @@ if (poolCount < 1 || poolCount > Math.min(30, dh_allServerQuestions.length)) {
     localStorage.clear(); 
 
     const resultDisplay = document.getElementById("dh-quiz-result");
-    resultDisplay.innerHTML = "<h3>Validating tokens server-side... Generating Scorecard...</h3>";
+    resultDisplay.innerHTML = `<section class="mh-scorecard-processing" role="status" aria-live="polite" aria-atomic="true">
+      <div class="mh-scorecard-processing-spinner" aria-hidden="true"></div>
+      <div class="mh-scorecard-processing-kicker">MATHEMATICS HUB</div>
+      <h3>Preparing Your Assessment Report</h3>
+      <p class="mh-scorecard-processing-primary">Verifying your answers securely…</p>
+      <p class="mh-scorecard-processing-secondary">Generating your personalised scorecard.</p>
+      <p class="mh-scorecard-processing-footnote">Please wait. Your assessment is being processed.</p>
+    </section>`;
     let rawScore = 0; 
     let trackingMatrix = [];
 
