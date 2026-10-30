@@ -98,6 +98,7 @@
     const poolInput = document.getElementById("dh-student-pool-count");
     const token = ++dh_poolRequestToken;
     dh_allServerQuestions = [];
+    if (document.querySelector('[data-mode="portal"]')) document.dispatchEvent(new CustomEvent('mh:v3:pool-state', {detail:{state:'loading'}}));
     if (!cls || !ch || !st) return;
     if (hintEl) hintEl.textContent = "Synchronizing counts with server...";
     try {
@@ -115,6 +116,7 @@
       }));
       if (token !== dh_poolRequestToken || setSelect.value !== st) return;
       dh_allServerQuestions = groups.flat();
+      if (document.querySelector('[data-mode="portal"]')) document.dispatchEvent(new CustomEvent('mh:v3:pool-state', {detail:{state:'ready',available:dh_allServerQuestions.length,sets:sets.length}}));
       if (hintEl) hintEl.textContent = `Available pool: ${dh_allServerQuestions.length} questions total${st === "ALL" ? " across " + sets.length + " sets" : ""}.`;
       if (poolInput) {
         poolInput.min = 1;
@@ -122,6 +124,7 @@
         poolInput.value = Math.min(10, dh_allServerQuestions.length);
       }
     } catch (err) {
+      if (document.querySelector('[data-mode="portal"]')) document.dispatchEvent(new CustomEvent('mh:v3:pool-state', {detail:{state:'error'}}));
       if (hintEl) hintEl.textContent = "Sync failed. Re-select options.";
       console.error("Question pool:", err);
     }

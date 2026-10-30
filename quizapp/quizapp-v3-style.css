@@ -1647,3 +1647,12 @@ html.mh-dark #dh-quiz-result .mh-scorecard-processing .mh-scorecard-processing-f
   #dh-quiz-result .mh-scorecard-processing-spinner { animation: none; border-top-color: #0d9488; }
 }
 @media print { #dh-quiz-result .mh-scorecard-processing { display: none !important; } }
+
+/* Overall Assessment Portal registration-first readiness indicator */
+[data-mode="portal"] .mh-v3-portal-note {display:block; width:fit-content; max-width:100%; overflow-wrap:anywhere; margin:9px 0 0; padding:8px 12px; border:1px solid #cbd5e1; border-radius:999px; background:#f1f5f9; color:#334155; font-size:12px; font-weight:650; line-height:1.45;}
+[data-mode="portal"] .mh-v3-portal-note-ready {background:#e6faf5; border-color:#7dd3c7; color:#075e55;}
+[data-mode="portal"] #dh-student-pool-count:disabled, [data-mode="portal"] #dh-start-quiz-btn:disabled {opacity:.55!important; cursor:not-allowed!important;}
+html.mh-dark [data-mode="portal"] .mh-v3-portal-note {background:#1e3348; color:#d7e6f5; border-color:#476077;}
+html.mh-dark [data-mode="portal"] .mh-v3-portal-note-ready {background:#113d3d; color:#a7f3d0; border-color:#2d8a7d;}
+@media(max-width:480px) {[data-mode="portal"] .mh-v3-portal-note {border-radius:12px; font-size:11.5px;}}
+@media print {[data-mode="portal"] .mh-v3-portal-note {display:none!important;}}
