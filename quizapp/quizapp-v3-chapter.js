@@ -108,7 +108,18 @@
           countInput.disabled = false;
         }
         if (startButton) startButton.disabled = false;
-        note.textContent = 'Question pool ready. Enter the number of questions and start when ready.';
+        // Keep the page uncluttered: move the ready indicator beside the pool count.
+        note.textContent = '✓ Question pool ready · ' + available + ' available';
+        note.classList.add('mh-v3-chapter-note-ready');
+        if (poolHint && poolHint.parentNode) {
+          poolHint.parentNode.insertBefore(note, poolHint.nextSibling);
+        } else if (countInput && countInput.parentNode) {
+          countInput.parentNode.appendChild(note);
+        }
+        if (dash) {
+          var readySubtitle = dash.querySelector('.dh-dashboard-subtitle');
+          if (readySubtitle) readySubtitle.textContent = 'Enter your details, choose the number of questions, and begin your assessment.';
+        }
         // Reveal only after all chapter-specific changes are complete.
         host.classList.add('mh-chapter-ready');
       } catch (err) {
