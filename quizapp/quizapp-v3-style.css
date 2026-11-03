@@ -1681,3 +1681,35 @@ html.mh-dark [data-mode="portal"] .mh-v3-portal-note-ready {background:#113d3d; 
     width: 100% !important;
     min-width: 0 !important;
 }
+
+/* V-02: Full Review status gets its own row, on mobile and desktop.
+   Grid rows avoid flex width competition with long MathJax questions. */
+#dh-full-review-report-panel .dh-report-card-review .dh-review-question-header {
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) !important;
+  grid-template-rows: auto auto !important;
+  justify-content: stretch !important;
+  align-items: start !important;
+  gap: 5px !important;
+}
+#dh-full-review-report-panel .dh-report-card-review .dh-review-question-header > .dh-review-question-status {
+  grid-column: 1 !important;
+  grid-row: 1 !important;
+  justify-self: end !important;
+  align-self: start !important;
+  width: max-content !important;
+  max-width: 100% !important;
+  white-space: nowrap !important;
+  word-break: keep-all !important;
+  overflow-wrap: normal !important;
+  text-align: right !important;
+  margin: 0 !important;
+}
+#dh-full-review-report-panel .dh-report-card-review .dh-review-question-header > .q-text {
+  grid-column: 1 !important;
+  grid-row: 2 !important;
+  width: 100% !important;
+  min-width: 0 !important;
+  max-width: 100% !important;
+  margin: 0 !important;
+}
