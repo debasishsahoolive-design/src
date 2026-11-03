@@ -697,9 +697,9 @@ if (poolCount < 1 || poolCount > Math.min(30, dh_allServerQuestions.length)) {
 
       return `
         <div class="dh-report-card-review" style="padding:18px; border:1px solid #e2e8f0; border-radius:8px; margin-bottom:20px; background:#fff; page-break-inside: avoid;">
-          <div class="dh-review-question-header" style="display:grid; grid-template-columns:minmax(0,1fr); grid-template-rows:auto auto; row-gap:5px; align-items:start; margin-bottom:12px; width:100%;">
-          <span class="dh-review-question-status" style="grid-column:1; grid-row:1; justify-self:end; width:max-content; max-width:100%; white-space:nowrap; word-break:normal; overflow-wrap:normal; font-weight:bold; color:${isSkipped ? '#64748b' : evalItem?.correct ? '#16a34a' : '#dc2626'}">${isSkipped ? '○ Not Attempted' : evalItem?.correct ? '✓ Correct' : '✗ Incorrect'}</span>
-          <div class="q-text" style="grid-column:1; grid-row:2; width:100%; min-width:0; max-width:100%; font-size:1.1em; color:#1e293b; line-height:1.5;"><strong>Question ${ idx + 1 }:</strong> ${ q.question }</div>
+          <div class="dh-review-question-header" style="display:block !important; margin-bottom:12px; width:100%; clear:both;">
+          <span class="dh-review-question-status" style="display:block !important; float:none !important; clear:both; width:100%; box-sizing:border-box; text-align:right; margin-bottom:8px; white-space:nowrap; word-break:normal; overflow-wrap:normal; font-weight:bold; color:${isSkipped ? '#64748b' : evalItem?.correct ? '#16a34a' : '#dc2626'}">${isSkipped ? '○ Not Attempted' : evalItem?.correct ? '✓ Correct' : '✗ Incorrect'}</span>
+          <div class="q-text" style="display:block !important; float:none !important; clear:both; width:100%; min-width:0; max-width:100%; font-size:1.1em; color:#1e293b; line-height:1.5;"><strong>Question ${ idx + 1 }:</strong> ${ q.question }</div>
   </div>
           <div>${qImgsHtml}</div>
           <div>${parsedOptsHtml}</div>
@@ -717,7 +717,7 @@ if (poolCount < 1 || poolCount > Math.min(30, dh_allServerQuestions.length)) {
 
   function dh_injectAndRenderDashboardUI(rawScore, reportRowsHtml, fullResponseReviewCardsHtml, calculatedPercentage, safePrintFileName, cls, chSelected, stSelected, nameInput, emailInput, trackingMatrix, timeTakenSeconds = 0, timeTakenFormatted = "00:00:00") {
     const resultDisplay = document.getElementById("dh-quiz-result");
-    const unlockReviewPrintBtn = (calculatedPercentage >= 60) ? `<button onclick="printFullReview()" style="flex:1; padding:12px; background:#16a34a; color:white; border:none; border-radius:6px; font-weight:bold; cursor:pointer; font-size:14px; box-shadow:0 2px 4px rgba(22,163,74,0.15);">📄 Print Full Review Card</button>` : "";
+    const unlockReviewPrintBtn = (calculatedPercentage >= 50) ? `<button onclick="printFullReview()" style="flex:1; padding:12px; background:#16a34a; color:white; border:none; border-radius:6px; font-weight:bold; cursor:pointer; font-size:14px; box-shadow:0 2px 4px rgba(22,163,74,0.15);">📄 Print Full Review Card</button>` : "";
 
     resultDisplay.innerHTML = `
       <div id="dh-summary-report-card-panel" style="padding:clamp(16px,3vw,30px); border:1px solid #d7e0eb; background:#ffffff; border-radius:16px; margin-bottom:30px; box-shadow:0 12px 32px rgba(15,23,42,0.07); color:#1e293b;">
@@ -946,9 +946,9 @@ async function dh_triggerSecurePrint(printTargetElementIds, targetFileNameString
           body { margin:0 !important; padding:12px !important; }
           #dh-full-review-report-panel, .dh-report-card-review { max-width:100% !important; box-sizing:border-box !important; }
           .dh-report-card-review { break-inside:auto !important; page-break-inside:auto !important; }
-          .dh-review-question-header { display:flex; flex-wrap:wrap; gap:8px 12px; }
-          .dh-review-question-header .q-text { min-width:0; overflow-wrap:break-word; }
-          .dh-review-question-status { flex-shrink:0; white-space:nowrap; }
+          .dh-review-question-header { display:block !important; width:100% !important; }
+          .dh-review-question-header .q-text { display:block !important; clear:both; width:100% !important; min-width:0; overflow-wrap:break-word; }
+          .dh-review-question-status { display:block !important; clear:both; width:100% !important; text-align:right; white-space:nowrap; margin-bottom:8px; }
           mjx-container { max-width:100% !important; }
           mjx-container[display="true"] { overflow:visible !important; max-width:none !important; }
           .mh-math-overflow { overflow:visible !important; }

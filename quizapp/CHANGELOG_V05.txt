@@ -1,0 +1,2 @@
+V05: Full Review Print unlock threshold changed from 60% to 50%.
+Based on V04 two-row review header fix. No other JavaScript or CSS changes.
