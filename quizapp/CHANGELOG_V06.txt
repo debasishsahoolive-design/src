@@ -1,0 +1,8 @@
+Mathematics Hub V3 — V06 Distinctive Left Status Badge
+
+- Based on V05 (50% Full Review Print threshold).
+- Changed only Full Review header status markup to a distinct pill badge in its own row ABOVE Question number, aligned LEFT.
+- Three status colors: Correct green, Incorrect red, Not Attempted slate; light and dark mode.
+- Added targeted CSS and print-iframe layout rule for badge.
+- Existing questions, options, explanations, evaluation, threshold, adapters and print logic otherwise retained.
+- Visual browser and mobile PDF tests still required.

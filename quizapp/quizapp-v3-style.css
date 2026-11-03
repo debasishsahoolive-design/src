@@ -1684,3 +1684,43 @@ html.mh-dark [data-mode="portal"] .mh-v3-portal-note-ready {background:#113d3d; 
   min-width: 0 !important;
   max-width: 100% !important;
 }
+
+
+/* V06: unmistakable status badge ABOVE question, left aligned (screen and print). */
+#dh-full-review-report-panel .dh-report-card-review .mh-v06-status-row {
+  display: block !important;
+  width: 100% !important;
+  text-align: left !important;
+  margin: 0 0 9px !important;
+  clear: both !important;
+}
+#dh-full-review-report-panel .dh-report-card-review .mh-v06-status-row .mh-v06-status-badge {
+  display: inline-block !important;
+  float: none !important;
+  clear: none !important;
+  width: auto !important;
+  max-width: 100% !important;
+  text-align: left !important;
+  margin: 0 !important;
+  padding: 5px 11px !important;
+  border-radius: 999px !important;
+  font-size: 13px !important;
+  line-height: 1.35 !important;
+  font-weight: 700 !important;
+  white-space: nowrap !important;
+  word-break: normal !important;
+}
+/* Light-mode colors. */
+#dh-full-review-report-panel .mh-v06-correct { background: #dcfce7 !important; color: #166534 !important; border-color: #86efac !important; }
+#dh-full-review-report-panel .mh-v06-incorrect { background: #fee2e2 !important; color: #991b1b !important; border-color: #fca5a5 !important; }
+#dh-full-review-report-panel .mh-v06-skipped { background: #f1f5f9 !important; color: #475569 !important; border-color: #cbd5e1 !important; }
+/* Dark mode: override the inline badge colors, leaving question/options untouched. */
+html.mh-dark #dh-full-review-report-panel .mh-v06-correct { background: #123c2d !important; color: #a7f3d0 !important; border-color: #2d8b68 !important; }
+html.mh-dark #dh-full-review-report-panel .mh-v06-incorrect { background: #451f2b !important; color: #fecaca !important; border-color: #a85564 !important; }
+html.mh-dark #dh-full-review-report-panel .mh-v06-skipped { background: #273449 !important; color: #e2e8f0 !important; border-color: #64748b !important; }
+/* PDF is always light themed for predictable printing. */
+@media print {
+  #dh-full-review-report-panel .mh-v06-correct { background: #dcfce7 !important; color: #166534 !important; border-color: #86efac !important; }
+  #dh-full-review-report-panel .mh-v06-incorrect { background: #fee2e2 !important; color: #991b1b !important; border-color: #fca5a5 !important; }
+  #dh-full-review-report-panel .mh-v06-skipped { background: #f1f5f9 !important; color: #475569 !important; border-color: #cbd5e1 !important; }
+}

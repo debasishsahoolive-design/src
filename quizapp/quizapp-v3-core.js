@@ -698,7 +698,9 @@ if (poolCount < 1 || poolCount > Math.min(30, dh_allServerQuestions.length)) {
       return `
         <div class="dh-report-card-review" style="padding:18px; border:1px solid #e2e8f0; border-radius:8px; margin-bottom:20px; background:#fff; page-break-inside: avoid;">
           <div class="dh-review-question-header" style="display:block !important; margin-bottom:12px; width:100%; clear:both;">
-          <span class="dh-review-question-status" style="display:block !important; float:none !important; clear:both; width:100%; box-sizing:border-box; text-align:right; margin-bottom:8px; white-space:nowrap; word-break:normal; overflow-wrap:normal; font-weight:bold; color:${isSkipped ? '#64748b' : evalItem?.correct ? '#16a34a' : '#dc2626'}">${isSkipped ? '○ Not Attempted' : evalItem?.correct ? '✓ Correct' : '✗ Incorrect'}</span>
+          <div class="mh-v06-status-row" style="display:block !important; width:100% !important; clear:both !important; text-align:left !important; margin:0 0 9px 0 !important;">
+            <span class="dh-review-question-status mh-v06-status-badge ${isSkipped ? 'mh-v06-skipped' : evalItem?.correct ? 'mh-v06-correct' : 'mh-v06-incorrect'}" style="display:inline-block !important; float:none !important; clear:none !important; width:auto !important; max-width:100%; box-sizing:border-box; text-align:left !important; margin:0 !important; padding:5px 11px !important; border-radius:999px !important; border:1px solid ${isSkipped ? '#cbd5e1' : evalItem?.correct ? '#86efac' : '#fca5a5'} !important; background:${isSkipped ? '#f1f5f9' : evalItem?.correct ? '#dcfce7' : '#fee2e2'} !important; color:${isSkipped ? '#475569' : evalItem?.correct ? '#166534' : '#991b1b'} !important; font-weight:700 !important; font-size:13px !important; line-height:1.35 !important; white-space:nowrap !important; word-break:normal !important; overflow-wrap:normal !important;">${isSkipped ? '○ Not Attempted' : evalItem?.correct ? '✓ Correct' : '✗ Incorrect'}</span>
+          </div>
           <div class="q-text" style="display:block !important; float:none !important; clear:both; width:100%; min-width:0; max-width:100%; font-size:1.1em; color:#1e293b; line-height:1.5;"><strong>Question ${ idx + 1 }:</strong> ${ q.question }</div>
   </div>
           <div>${qImgsHtml}</div>
@@ -948,7 +950,9 @@ async function dh_triggerSecurePrint(printTargetElementIds, targetFileNameString
           .dh-report-card-review { break-inside:auto !important; page-break-inside:auto !important; }
           .dh-review-question-header { display:block !important; width:100% !important; }
           .dh-review-question-header .q-text { display:block !important; clear:both; width:100% !important; min-width:0; overflow-wrap:break-word; }
-          .dh-review-question-status { display:block !important; clear:both; width:100% !important; text-align:right; white-space:nowrap; margin-bottom:8px; }
+          .mh-v06-status-row { display:block !important; width:100% !important; text-align:left !important; margin-bottom:9px !important; }
+          .mh-v06-status-row .dh-review-question-status { display:inline-block !important; clear:none !important; width:auto !important; text-align:left !important; white-space:nowrap !important; margin:0 !important; }
+          .dh-review-question-status:not(.mh-v06-status-badge) { display:block !important; clear:both; width:100% !important; text-align:right; white-space:nowrap; margin-bottom:8px; }
           mjx-container { max-width:100% !important; }
           mjx-container[display="true"] { overflow:visible !important; max-width:none !important; }
           .mh-math-overflow { overflow:visible !important; }
