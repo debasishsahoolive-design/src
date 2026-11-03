@@ -697,14 +697,14 @@ if (poolCount < 1 || poolCount > Math.min(30, dh_allServerQuestions.length)) {
 
       return `
         <div class="dh-report-card-review" style="padding:18px; border:1px solid #e2e8f0; border-radius:8px; margin-bottom:20px; background:#fff; page-break-inside: avoid;">
-          <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:12px;">
+          <div class="dh-review-question-header" style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:12px;">
  
 
 
 <div class="q-text" style="font-size:1.1em; color:#1e293b; line-height:1.5; flex:1;"><strong>Question ${ idx + 1 }:</strong> ${ q.question }</div>
  
  
- <span style="font-weight:bold; color:${isSkipped ? '#64748b' : evalItem?.correct ? '#16a34a' : '#dc2626'}">${isSkipped ? '○ Not Attempted' : evalItem?.correct ? '✓ Correct' : '✗ Incorrect'}</span>
+ <span class="dh-review-question-status" style="font-weight:bold; color:${isSkipped ? '#64748b' : evalItem?.correct ? '#16a34a' : '#dc2626'}">${isSkipped ? '○ Not Attempted' : evalItem?.correct ? '✓ Correct' : '✗ Incorrect'}</span>
   </div>
           <div>${qImgsHtml}</div>
           <div>${parsedOptsHtml}</div>
@@ -946,6 +946,15 @@ async function dh_triggerSecurePrint(printTargetElementIds, targetFileNameString
           th { background:#1e293b; color:#fff; }
           .dh-action-buttons-wrapper,button { display:none !important; }
           img { max-width:100% !important; height:auto !important; display:block; margin:14px auto; }
+          /* Print-only: keep long MathJax formulas visible and avoid mobile-width clipping. */
+          html,body { width:auto !important; max-width:100% !important; box-sizing:border-box !important; }
+          body { margin:0 !important; padding:12px !important; }
+          #dh-full-review-report-panel, .dh-report-card-review { max-width:100% !important; box-sizing:border-box !important; }
+          .dh-report-card-review { break-inside:auto !important; page-break-inside:auto !important; }
+          .dh-review-question-header { display:flex; flex-wrap:wrap; gap:8px 12px; }
+          .dh-review-question-header .q-text { min-width:0; overflow-wrap:break-word; }
+          .dh-review-question-status { flex-shrink:0; white-space:nowrap; }
+          mjx-container { max-width:100% !important; }
           mjx-container[display="true"] { overflow:visible !important; max-width:none !important; }
           .mh-math-overflow { overflow:visible !important; }
           @page { margin:15mm; }

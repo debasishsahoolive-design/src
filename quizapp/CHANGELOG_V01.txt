@@ -1,0 +1,1 @@
+Mobile layout: separate question result status from question heading. Print iframe: responsive width, math visibility, allow long review cards to paginate. All scoring, 60% threshold, adapters and print invocation unchanged. Test on private Blogger before deployment.
