@@ -1656,3 +1656,66 @@ html.mh-dark [data-mode="portal"] .mh-v3-portal-note {background:#1e3348; color:
 html.mh-dark [data-mode="portal"] .mh-v3-portal-note-ready {background:#113d3d; color:#a7f3d0; border-color:#2d8a7d;}
 @media(max-width:480px) {[data-mode="portal"] .mh-v3-portal-note {border-radius:12px; font-size:11.5px;}}
 @media print {[data-mode="portal"] .mh-v3-portal-note {display:none!important;}}
+
+/* V08: Full Review status above the question; screen only. */
+@media screen {
+  #dh-full-review-report-panel .dh-report-card-review .dh-review-question-header {
+    display:flex !important;
+    flex-direction:column !important;
+    align-items:stretch !important;
+    gap:9px !important;
+    width:100% !important;
+  }
+  #dh-full-review-report-panel .dh-report-card-review .dh-review-question-status {
+    order:-1 !important;
+    display:inline-flex !important;
+    align-self:flex-start !important;
+    width:auto !important;
+    max-width:100% !important;
+    flex:none !important;
+    white-space:nowrap !important;
+    overflow-wrap:normal !important;
+    margin:0 !important;
+    padding:5px 11px !important;
+    border-radius:999px !important;
+    font-size:.88rem !important;
+    line-height:1.35 !important;
+    background:#f1f5f9;
+  }
+  #dh-full-review-report-panel .dh-report-card-review .dh-review-question-header > .q-text {
+    order:0 !important;
+    display:block !important;
+    width:100% !important;
+    flex:none !important;
+    min-width:0 !important;
+    max-width:100% !important;
+    overflow-wrap:break-word !important;
+  }
+  html.mh-dark #dh-full-review-report-panel .dh-review-question-status {
+    background:#26364b !important;
+  }
+}
+
+/* V09: matches actual report markup; badge always above question on screen. */
+@media screen {
+  #dh-full-review-report-panel .dh-review-question-header {
+    display:flex !important; flex-direction:column !important; align-items:stretch !important;
+    gap:8px !important; width:100% !important;
+  }
+  #dh-full-review-report-panel .dh-review-question-status {
+    display:inline-flex !important; align-self:flex-start !important;
+    width:auto !important; max-width:100% !important; flex:none !important;
+    padding:5px 11px !important; border-radius:999px !important; white-space:nowrap !important;
+    font-size:.87rem !important; line-height:1.35 !important;
+  }
+  #dh-full-review-report-panel .dh-status-correct { background:#dcfce7 !important; color:#166534 !important; }
+  #dh-full-review-report-panel .dh-status-incorrect { background:#fee2e2 !important; color:#991b1b !important; }
+  #dh-full-review-report-panel .dh-status-skipped { background:#e2e8f0 !important; color:#475569 !important; }
+  #dh-full-review-report-panel .dh-review-question-header > .q-text {
+    display:block !important; width:100% !important; max-width:100% !important;
+    min-width:0 !important; flex:none !important; overflow-wrap:break-word !important;
+  }
+  html.mh-dark #dh-full-review-report-panel .dh-status-correct { background:#123f31 !important; color:#a7f3d0 !important; }
+  html.mh-dark #dh-full-review-report-panel .dh-status-incorrect { background:#4c1d26 !important; color:#fecaca !important; }
+  html.mh-dark #dh-full-review-report-panel .dh-status-skipped { background:#26364b !important; color:#cbd5e1 !important; }
+}
