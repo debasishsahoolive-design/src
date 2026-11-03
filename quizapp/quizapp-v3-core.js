@@ -697,9 +697,14 @@ if (poolCount < 1 || poolCount > Math.min(30, dh_allServerQuestions.length)) {
 
       return `
         <div class="dh-report-card-review" style="padding:18px; border:1px solid #e2e8f0; border-radius:8px; margin-bottom:20px; background:#fff; page-break-inside: avoid;">
-          <div class="dh-review-question-header" style="display:block !important; margin-bottom:12px; width:100%; clear:both;">
-          <span class="dh-review-question-status" style="display:block !important; float:none !important; clear:both; width:100%; box-sizing:border-box; text-align:left; margin-bottom:10px; white-space:nowrap; word-break:normal; overflow-wrap:normal; font-weight:bold; color:${isSkipped ? '#64748b' : evalItem?.correct ? '#16a34a' : '#dc2626'}">${isSkipped ? '○ Not Attempted' : evalItem?.correct ? '✓ Correct' : '✗ Incorrect'}</span>
-          <div class="q-text" style="display:block !important; float:none !important; clear:both; width:100%; min-width:0; max-width:100%; font-size:1.1em; color:#1e293b; line-height:1.5;"><strong>Question ${ idx + 1 }:</strong> ${ q.question }</div>
+          <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:12px;">
+ 
+
+
+<div class="q-text" style="font-size:1.1em; color:#1e293b; line-height:1.5; flex:1;"><strong>Question ${ idx + 1 }:</strong> ${ q.question }</div>
+ 
+ 
+ <span style="font-weight:bold; color:${isSkipped ? '#64748b' : evalItem?.correct ? '#16a34a' : '#dc2626'}">${isSkipped ? '○ Not Attempted' : evalItem?.correct ? '✓ Correct' : '✗ Incorrect'}</span>
   </div>
           <div>${qImgsHtml}</div>
           <div>${parsedOptsHtml}</div>
@@ -948,7 +953,7 @@ async function dh_triggerSecurePrint(printTargetElementIds, targetFileNameString
           .dh-report-card-review { break-inside:auto !important; page-break-inside:auto !important; }
           .dh-review-question-header { display:block !important; width:100% !important; }
           .dh-review-question-header .q-text { display:block !important; clear:both; width:100% !important; min-width:0; overflow-wrap:break-word; }
-          .dh-review-question-status { display:block !important; clear:both; width:100% !important; text-align:right; white-space:nowrap; margin-bottom:8px; }
+          .dh-review-question-status { display:block !important; clear:both; width:100% !important; text-align:left !important; white-space:nowrap; margin-bottom:8px; }
           mjx-container { max-width:100% !important; }
           mjx-container[display="true"] { overflow:visible !important; max-width:none !important; }
           .mh-math-overflow { overflow:visible !important; }
@@ -967,7 +972,14 @@ async function dh_triggerSecurePrint(printTargetElementIds, targetFileNameString
           frameDoc.head.appendChild(copy);
         }
       });
-      targets.forEach(el => frameDoc.body.appendChild(el.cloneNode(true)));
+      targets.forEach(el => {
+        const copy = el.cloneNode(true);
+        copy.querySelectorAll('.dh-review-question-header').forEach(header => {
+          const badge = header.querySelector('.dh-review-question-status');
+          if (badge) header.insertBefore(badge, header.firstChild);
+        });
+        frameDoc.body.appendChild(copy);
+      });
       if (frameDoc.fonts && frameDoc.fonts.ready) await frameDoc.fonts.ready;
       await Promise.all(Array.from(frameDoc.images).map(img => {
         if (img.complete) return Promise.resolve();

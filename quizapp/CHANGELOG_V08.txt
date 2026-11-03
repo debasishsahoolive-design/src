@@ -1,0 +1,14 @@
+Mathematics Hub QuizApp V3 — V08 targeted patch
+Source: user-uploaded quizapp-v3-core (2).js and quizapp-v3-style (4).css.
+
+1. Restored MathJax-aware PDF iframe printing: await MathJax rendering,
+   transfer dynamically generated MathJax CSS and wait for fonts/images.
+2. Move Correct / Incorrect / Not Attempted above question text in Full Review.
+3. Change Full Review print eligibility from 60% to 50%.
+4. Portal and Chapter adapters unchanged.
+5. No changes to scoring, navigation, shuffle or backend.
+
+Validation: node --check passed.
+Not validated: real mobile browser PDF printing; test on private blog first.
+Deploy: upload the two original-named files to GitHub quizapp/ and update
+both pinned commit hashes in the intended Blogger theme.
