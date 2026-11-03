@@ -1658,52 +1658,26 @@ html.mh-dark [data-mode="portal"] .mh-v3-portal-note-ready {background:#113d3d; 
 @media print {[data-mode="portal"] .mh-v3-portal-note {display:none!important;}}
 
 
-/* V-01: Full Review status occupies a separate top-right row on all screens.
-   This prevents long MathJax expressions from narrowing the status label.
-   Scoped to review cards only; assessment questions and options are unchanged. */
-#dh-full-review-report-panel .dh-report-card-review > div:first-child {
-    flex-direction: column !important;
-    align-items: stretch !important;
-    gap: 4px !important;
-}
-#dh-full-review-report-panel .dh-report-card-review > div:first-child > span:last-child {
-    order: -1;
-    align-self: flex-end !important;
-    flex: 0 0 auto !important;
-    white-space: nowrap !important;
-    overflow-wrap: normal !important;
-    word-break: normal !important;
-    text-align: right !important;
-    line-height: 1.4 !important;
-}
-#dh-full-review-report-panel .dh-report-card-review > div:first-child > .q-text {
-    flex: 0 1 auto !important;
-    width: 100% !important;
-    min-width: 0 !important;
-}
-
-/* V-02: Full Review status gets its own row, on mobile and desktop.
-   Grid rows avoid flex width competition with long MathJax questions. */
+/* V-03: Full Review only — dedicated status row above full-width question.
+   The core markup also sets this grid inline to avoid stale-theme flex conflicts. */
 #dh-full-review-report-panel .dh-report-card-review .dh-review-question-header {
   display: grid !important;
   grid-template-columns: minmax(0, 1fr) !important;
   grid-template-rows: auto auto !important;
-  justify-content: stretch !important;
   align-items: start !important;
+  width: 100% !important;
   gap: 5px !important;
 }
-#dh-full-review-report-panel .dh-report-card-review .dh-review-question-header > .dh-review-question-status {
+#dh-full-review-report-panel .dh-report-card-review .dh-review-question-status {
   grid-column: 1 !important;
   grid-row: 1 !important;
   justify-self: end !important;
-  align-self: start !important;
   width: max-content !important;
   max-width: 100% !important;
   white-space: nowrap !important;
-  word-break: keep-all !important;
+  word-break: normal !important;
   overflow-wrap: normal !important;
   text-align: right !important;
-  margin: 0 !important;
 }
 #dh-full-review-report-panel .dh-report-card-review .dh-review-question-header > .q-text {
   grid-column: 1 !important;
@@ -1711,5 +1685,4 @@ html.mh-dark [data-mode="portal"] .mh-v3-portal-note-ready {background:#113d3d; 
   width: 100% !important;
   min-width: 0 !important;
   max-width: 100% !important;
-  margin: 0 !important;
 }

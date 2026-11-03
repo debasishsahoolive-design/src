@@ -697,14 +697,9 @@ if (poolCount < 1 || poolCount > Math.min(30, dh_allServerQuestions.length)) {
 
       return `
         <div class="dh-report-card-review" style="padding:18px; border:1px solid #e2e8f0; border-radius:8px; margin-bottom:20px; background:#fff; page-break-inside: avoid;">
-          <div class="dh-review-question-header" style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:12px;">
- 
-
-
-<div class="q-text" style="font-size:1.1em; color:#1e293b; line-height:1.5; flex:1;"><strong>Question ${ idx + 1 }:</strong> ${ q.question }</div>
- 
- 
- <span class="dh-review-question-status" style="font-weight:bold; color:${isSkipped ? '#64748b' : evalItem?.correct ? '#16a34a' : '#dc2626'}">${isSkipped ? '○ Not Attempted' : evalItem?.correct ? '✓ Correct' : '✗ Incorrect'}</span>
+          <div class="dh-review-question-header" style="display:grid; grid-template-columns:minmax(0,1fr); grid-template-rows:auto auto; row-gap:5px; align-items:start; margin-bottom:12px; width:100%;">
+          <span class="dh-review-question-status" style="grid-column:1; grid-row:1; justify-self:end; width:max-content; max-width:100%; white-space:nowrap; word-break:normal; overflow-wrap:normal; font-weight:bold; color:${isSkipped ? '#64748b' : evalItem?.correct ? '#16a34a' : '#dc2626'}">${isSkipped ? '○ Not Attempted' : evalItem?.correct ? '✓ Correct' : '✗ Incorrect'}</span>
+          <div class="q-text" style="grid-column:1; grid-row:2; width:100%; min-width:0; max-width:100%; font-size:1.1em; color:#1e293b; line-height:1.5;"><strong>Question ${ idx + 1 }:</strong> ${ q.question }</div>
   </div>
           <div>${qImgsHtml}</div>
           <div>${parsedOptsHtml}</div>
