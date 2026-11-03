@@ -476,54 +476,7 @@ if (poolCount < 1 || poolCount > Math.min(30, dh_allServerQuestions.length)) {
   }
 
   // DYNAMIC TITLE FILE NAMER ENGINE (Pads execution timelines to prevent attempt file overrides)  function 
-  function dh_triggerSecurePrint(printTargetElementId, targetFileNameString) {
-    const originalDocumentTitle = document.title;
-    const d = new Date();
-    const pad = (n) => String(n).padStart(2, '0');
-    const timestamp = d.getFullYear() + pad(d.getMonth() + 1) + pad(d.getDate()) + "_" + pad(d.getHours()) + pad(d.getMinutes()) + pad(d.getSeconds());
-
-    document.title = `${targetFileNameString}_${timestamp}`;
-    const printContainer = document.getElementById(printTargetElementId);
-    if (!printContainer) return;
-
-    // 1. Ensure any raw image tokens inside the container are converted to proper img tags
-    if (printContainer.innerHTML.includes("picQ52") || printContainer.innerHTML.includes("picQ65")) {
-      printContainer.innerHTML = printContainer.innerHTML
-        .replace(/\{\[\}\{\[\}picQ52\{\]\}\{\]\}/g, '<img src="https://raw.githubusercontent.com/debasis-sahoo/maths-hub/main/images/picQ52.png" style="max-width:320px;height:auto;display:block;margin:10px auto;" />')
-        .replace(/\{\[\}\{\[\}picQ65\{\]\}\{\]\}/g, '<img src="https://raw.githubusercontent.com/debasis-sahoo/maths-hub/main/images/picQ65.png" style="max-width:320px;height:auto;display:block;margin:10px auto;" />');
-    }
-
-    printContainer.classList.add("dh-print-active-target");
-
-    // 2. Wait for images to load before calling window.print()
-    const imgs = printContainer.querySelectorAll("img");
-    const launchPrint = () => {
-      // Small timeout to allow paint cycle to complete
-      setTimeout(() => {
-        window.print();
-        printContainer.classList.remove("dh-print-active-target");
-        document.title = originalDocumentTitle;
-      }, 150);
-    };
-
-    if (imgs.length === 0) {
-      launchPrint();
-    } else {
-      let loaded = 0;
-      imgs.forEach((img) => {
-        if (img.complete) {
-          loaded++;
-          if (loaded === imgs.length) launchPrint();
-        } else {
-          img.onload = img.onerror = () => {
-            loaded++;
-            if (loaded === imgs.length) launchPrint();
-          };
-        }
-      });
-    }
-  }
-
+  // V09: obsolete legacy print routine removed; one print entry point remains.
 
 
 /* Original assessment script 5 */
@@ -697,15 +650,10 @@ if (poolCount < 1 || poolCount > Math.min(30, dh_allServerQuestions.length)) {
 
       return `
         <div class="dh-report-card-review" style="padding:18px; border:1px solid #e2e8f0; border-radius:8px; margin-bottom:20px; background:#fff; page-break-inside: avoid;">
-          <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:12px;">
- 
-
-
-<div class="q-text" style="font-size:1.1em; color:#1e293b; line-height:1.5; flex:1;"><strong>Question ${ idx + 1 }:</strong> ${ q.question }</div>
- 
- 
- <span style="font-weight:bold; color:${isSkipped ? '#64748b' : evalItem?.correct ? '#16a34a' : '#dc2626'}">${isSkipped ? '○ Not Attempted' : evalItem?.correct ? '✓ Correct' : '✗ Incorrect'}</span>
-  </div>
+          <div class="dh-review-question-header" style="display:flex; flex-direction:column; align-items:stretch; gap:8px; margin-bottom:12px;">
+          <span class="dh-review-question-status ${isSkipped ? 'dh-status-skipped' : evalItem?.correct ? 'dh-status-correct' : 'dh-status-incorrect'}" style="font-weight:bold; color:${isSkipped ? '#64748b' : evalItem?.correct ? '#16a34a' : '#dc2626'}">${isSkipped ? '○ Not Attempted' : evalItem?.correct ? '✓ Correct' : '✗ Incorrect'}</span>
+          <div class="q-text" style="font-size:1.1em; color:#1e293b; line-height:1.5; width:100%; min-width:0;"><strong>Question ${ idx + 1 }:</strong> ${ q.question }</div>
+        </div>
           <div>${qImgsHtml}</div>
           <div>${parsedOptsHtml}</div>
           <div class="dh-review-explanation" style="margin-top:14px; padding:12px; background:#f8fafc; border-left:4px solid #2563eb; font-size:14px; color:#334155;">
@@ -902,102 +850,107 @@ function printFullReview() {
   } 
   
 async function dh_triggerSecurePrint(printTargetElementIds, targetFileNameString) {
-    // V-01 isolated PDF repair: retain the existing report and its rendered MathJax.
-    const originalDocumentTitle = document.title;
-    const idList = Array.isArray(printTargetElementIds) ? printTargetElementIds : [printTargetElementIds];
-    const targets = idList.map(id => document.getElementById(id)).filter(Boolean);
+    // V09: print the ORIGINAL rendered report nodes. No iframe and no MathJax cloning.
+    if (window.__dhPrintInProgress) return;
+    const ids = Array.isArray(printTargetElementIds) ? printTargetElementIds : [printTargetElementIds];
+    const targets = ids.map(id => document.getElementById(id)).filter(Boolean);
     if (!targets.length) return;
-
+    window.__dhPrintInProgress = true;
+    const oldTitle = document.title;
     const d = new Date();
     const pad = n => String(n).padStart(2, '0');
-    const timestamp = d.getFullYear() + pad(d.getMonth() + 1) + pad(d.getDate()) + '_' +
+    const stamp = d.getFullYear() + pad(d.getMonth() + 1) + pad(d.getDate()) + '_' +
       pad(d.getHours()) + pad(d.getMinutes()) + pad(d.getSeconds());
-    const printTitle = `${targetFileNameString}_${timestamp}`;
-
+    let printRoot, printStyle, placeholders = [], cleaned = false;
+    const restore = () => {
+      if (cleaned) return;
+      cleaned = true;
+      placeholders.forEach(({placeholder, node}) => {
+        if (placeholder.parentNode) placeholder.parentNode.replaceChild(node, placeholder);
+      });
+      if (printRoot) printRoot.remove();
+      if (printStyle) printStyle.remove();
+      document.documentElement.classList.remove('dh-native-report-print');
+      document.title = oldTitle;
+      window.__dhPrintInProgress = false;
+      window.removeEventListener('afterprint', onAfterPrint);
+    };
+    const onAfterPrint = () => { setTimeout(restore, 300); };
     try {
-      // Finish rendering in the ORIGINAL document before cloning the report.
+      // Typeset in place; do not move until typesetting has finished.
       if (window.MathJax && typeof window.MathJax.typesetPromise === 'function') {
         await window.MathJax.typesetPromise(targets);
       }
       if (document.fonts && document.fonts.ready) await document.fonts.ready;
-
-      let printIframe = document.getElementById('dh-print-frame');
-      if (!printIframe) {
-        printIframe = document.createElement('iframe');
-        printIframe.id = 'dh-print-frame';
-        printIframe.style.cssText = 'position:fixed;right:0;bottom:0;width:0;height:0;border:0;';
-        document.body.appendChild(printIframe);
-      }
-      const frameDoc = printIframe.contentDocument;
-      const safeTitle = printTitle.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-      frameDoc.open();
-      frameDoc.write(`<!DOCTYPE html><html><head><meta charset="utf-8"><title>${safeTitle}</title>
-        <style>
-          body { font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif; padding:24px; color:#1e293b; background:#fff; }
-          #dh-summary-report-card-panel { max-width:100%; border:1px solid #d7e0eb !important; border-radius:12px !important; }
-          .dh-report-brand-header { display:flex; align-items:center; gap:12px; padding-bottom:14px; margin-bottom:16px; border-bottom:2px solid #dbe4f0; }
-          .dh-report-ds-logo { display:block; width:60px; height:60px; object-fit:contain; border:0; border-radius:0; background:transparent; margin:0; padding:0; }
-          .dh-report-brand-name { margin:0 0 4px; color:#102a43; font-size:16px; font-weight:800; }
-          .dh-report-brand-subtitle { margin:0; color:#64748b; font-size:10px; letter-spacing:.08em; text-transform:uppercase; }
-          table { width:100%; border-collapse:collapse; margin-bottom:24px; }
-          th,td { border:1px solid #cbd5e1; padding:8px 10px; text-align:center !important; vertical-align:middle !important; }
-          #dh-summary-report-card-panel table { table-layout:fixed !important; width:100% !important; }
-          #dh-summary-report-card-panel table th,#dh-summary-report-card-panel table td { width:25%; text-align:center !important; vertical-align:middle !important; }
-          th { background:#1e293b; color:#fff; }
-          .dh-action-buttons-wrapper,button { display:none !important; }
-          img { max-width:100% !important; height:auto !important; display:block; margin:14px auto; }
-          /* Print-only: keep long MathJax formulas visible and avoid mobile-width clipping. */
-          html,body { width:auto !important; max-width:100% !important; box-sizing:border-box !important; }
-          body { margin:0 !important; padding:12px !important; }
-          #dh-full-review-report-panel, .dh-report-card-review { max-width:100% !important; box-sizing:border-box !important; }
-          .dh-report-card-review { break-inside:auto !important; page-break-inside:auto !important; }
-          .dh-review-question-header { display:block !important; width:100% !important; }
-          .dh-review-question-header .q-text { display:block !important; clear:both; width:100% !important; min-width:0; overflow-wrap:break-word; }
-          .dh-review-question-status { display:block !important; clear:both; width:100% !important; text-align:left !important; white-space:nowrap; margin-bottom:8px; }
-          mjx-container { max-width:100% !important; }
-          mjx-container[display="true"] { overflow:visible !important; max-width:none !important; }
-          .mh-math-overflow { overflow:visible !important; }
-          @page { margin:15mm; }
-        </style></head><body></body></html>`);
-      frameDoc.close();
-
-      // CommonHTML uses a dynamically injected stylesheet and font-face rules.
-      // Cloning only the report HTML loses these rules, breaking tall matrix delimiters.
-      document.querySelectorAll('style,link[rel="stylesheet"]').forEach(node => {
-        const css = node.tagName === 'STYLE' ? node.textContent || '' : '';
-        const href = node.getAttribute('href') || '';
-        if (/mjx-|MathJax|MJX-/i.test(css) || /mathjax/i.test(href) || /MJX|MathJax/i.test(node.id)) {
-          const copy = node.cloneNode(true);
-          if (copy.tagName === 'LINK') copy.href = node.href;
-          frameDoc.head.appendChild(copy);
-        }
+      printStyle = document.createElement('style');
+      printStyle.id = 'dh-v09-print-style';
+      printStyle.textContent = `
+        @media print {
+          @page { size:auto; margin:12mm; }
+          html.dh-native-report-print, html.dh-native-report-print body {
+            width:100% !important; min-width:0 !important; margin:0 !important;
+            padding:0 !important; background:#fff !important; color:#1e293b !important;
+          }
+          html.dh-native-report-print body > :not(#dh-native-print-root) { display:none !important; }
+          html.dh-native-report-print #dh-native-print-root {
+            display:block !important; position:static !important; width:100% !important;
+            max-width:none !important; margin:0 !important; padding:0 !important;
+            background:#fff !important; color:#1e293b !important;
+          }
+          html.dh-native-report-print #dh-native-print-root,
+          html.dh-native-report-print #dh-native-print-root * {
+            visibility:visible !important;
+          }
+          html.dh-native-report-print #dh-native-print-root #dh-summary-report-card-panel,
+          html.dh-native-report-print #dh-native-print-root #dh-full-review-report-panel {
+            display:block !important; position:static !important; width:100% !important;
+            max-width:100% !important; margin:0 0 14px !important; padding:0 !important;
+            box-shadow:none !important; background:#fff !important; color:#1e293b !important;
+          }
+          html.dh-native-report-print #dh-native-print-root .dh-review-question-header {
+            display:flex !important; flex-direction:column !important; align-items:stretch !important;
+            gap:7px !important; width:100% !important;
+          }
+          html.dh-native-report-print #dh-native-print-root .dh-review-question-status {
+            display:inline-block !important; align-self:flex-start !important;
+            width:auto !important; white-space:nowrap !important; flex:none !important;
+          }
+          html.dh-native-report-print #dh-native-print-root .dh-review-question-header .q-text {
+            display:block !important; width:100% !important; min-width:0 !important;
+            flex:none !important; overflow-wrap:break-word !important;
+          }
+          html.dh-native-report-print #dh-native-print-root .dh-report-card-review {
+            break-inside:avoid-page !important; page-break-inside:avoid !important;
+          }
+          html.dh-native-report-print #dh-native-print-root .dh-action-buttons-wrapper,
+          html.dh-native-report-print #dh-native-print-root button { display:none !important; }
+          html.dh-native-report-print #dh-native-print-root mjx-container {
+            visibility:visible !important; max-width:100% !important;
+          }
+          html.dh-native-report-print #dh-native-print-root img { max-width:100% !important; }
+        }`;
+      document.head.appendChild(printStyle);
+      printRoot = document.createElement('div');
+      printRoot.id = 'dh-native-print-root';
+      document.body.appendChild(printRoot);
+      targets.forEach(node => {
+        const placeholder = document.createComment('V09 report print placeholder');
+        node.parentNode.replaceChild(placeholder, node);
+        placeholders.push({placeholder, node});
+        printRoot.appendChild(node);
       });
-      targets.forEach(el => {
-        const copy = el.cloneNode(true);
-        copy.querySelectorAll('.dh-review-question-header').forEach(header => {
-          const badge = header.querySelector('.dh-review-question-status');
-          if (badge) header.insertBefore(badge, header.firstChild);
-        });
-        frameDoc.body.appendChild(copy);
-      });
-      if (frameDoc.fonts && frameDoc.fonts.ready) await frameDoc.fonts.ready;
-      await Promise.all(Array.from(frameDoc.images).map(img => {
-        if (img.complete) return Promise.resolve();
-        return new Promise(resolve => {
-          img.addEventListener('load', resolve, {once:true});
-          img.addEventListener('error', resolve, {once:true});
-          setTimeout(resolve, 10000); // Avoid blocking print forever on a missing asset.
-        });
-      }));
+      document.documentElement.classList.add('dh-native-report-print');
+      document.title = `${targetFileNameString}_${stamp}`;
+      window.addEventListener('afterprint', onAfterPrint);
+      // Give the browser a paint cycle with the original MathJax DOM in its print location.
       await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
-      document.title = printTitle;
-      printIframe.contentWindow.focus();
-      printIframe.contentWindow.print();
+      window.print();
+      // Fallback for browsers that do not fire afterprint. Avoid premature DOM removal.
+      setTimeout(restore, 120000);
     } catch (error) {
-      console.error('Assessment PDF preparation failed:', error);
-      alert('Could not prepare the PDF report. Please try again.');
-    } finally {
-      document.title = originalDocumentTitle;
+      console.error('Full Review print preparation failed:', error);
+      restore();
+      alert('Could not prepare the report for printing. Please try again.');
     }
   }
 

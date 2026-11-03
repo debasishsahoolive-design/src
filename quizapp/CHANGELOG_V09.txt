@@ -1,0 +1,11 @@
+V09 targeted corrections from V08 checkpoint
+
+1. Fixed actual Full Review HTML: added expected header/status classes and moved status before question.
+2. Added scoped light/dark status badge styles.
+3. Removed obsolete duplicate print function.
+4. Replaced iframe printing with native document printing using original MathJax DOM nodes, with restoration after print.
+5. Kept 50% threshold, quiz logic, backend and adapters unchanged.
+
+Node --check passed. Browser PDF rendering NOT YET VERIFIED.
+Test in private Blogger blog before public deployment.
+Upload original-named JS/CSS files to GitHub quizapp/ and update pinned commit hashes.
