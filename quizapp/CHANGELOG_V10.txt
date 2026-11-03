@@ -1,0 +1,8 @@
+V10 targeted print-only correction based on user-uploaded V09 files.
+- Replaced V09 original-DOM relocation with same-document print-only clones.
+- Avoids modifying original report positions during print.
+- Keeps MathJax-rendered DOM and existing MathJax stylesheet in same document.
+- Isolates print output and adds explicit print visibility rules.
+- Avoids premature 500ms summary print state reset.
+- Retains existing CSS unchanged, quiz logic unchanged, 50% eligibility unchanged.
+- Syntax checked only; browser/PDF validation required.

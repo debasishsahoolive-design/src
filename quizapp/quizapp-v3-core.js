@@ -829,9 +829,7 @@ if (poolCount < 1 || poolCount > Math.min(30, dh_allServerQuestions.length)) {
 
     dh_triggerSecurePrint('dh-summary-report-card-panel', summaryFileName);
 
-    setTimeout(() => {
-      document.body.classList.remove('print-summary-only');
-    }, 500);
+    // Print state is cleared by dh_triggerSecurePrint after printing.
   }
 
 function printFullReview() {
@@ -845,114 +843,117 @@ function printFullReview() {
 
     const reviewFileName = `FullReview_${chapterName}_${setName}_${studentName}`;
 
+    document.body.classList.remove('print-summary-only');
     // Pass BOTH panels: summary transcript first, then full questions review
     dh_triggerSecurePrint(['dh-summary-report-card-panel', 'dh-full-review-report-panel'], reviewFileName);
   } 
   
 async function dh_triggerSecurePrint(printTargetElementIds, targetFileNameString) {
-    // V09: print the ORIGINAL rendered report nodes. No iframe and no MathJax cloning.
-    if (window.__dhPrintInProgress) return;
-    const ids = Array.isArray(printTargetElementIds) ? printTargetElementIds : [printTargetElementIds];
-    const targets = ids.map(id => document.getElementById(id)).filter(Boolean);
-    if (!targets.length) return;
-    window.__dhPrintInProgress = true;
-    const oldTitle = document.title;
-    const d = new Date();
-    const pad = n => String(n).padStart(2, '0');
-    const stamp = d.getFullYear() + pad(d.getMonth() + 1) + pad(d.getDate()) + '_' +
-      pad(d.getHours()) + pad(d.getMinutes()) + pad(d.getSeconds());
-    let printRoot, printStyle, placeholders = [], cleaned = false;
-    const restore = () => {
-      if (cleaned) return;
-      cleaned = true;
-      placeholders.forEach(({placeholder, node}) => {
-        if (placeholder.parentNode) placeholder.parentNode.replaceChild(node, placeholder);
-      });
-      if (printRoot) printRoot.remove();
-      if (printStyle) printStyle.remove();
-      document.documentElement.classList.remove('dh-native-report-print');
-      document.title = oldTitle;
-      window.__dhPrintInProgress = false;
-      window.removeEventListener('afterprint', onAfterPrint);
-    };
-    const onAfterPrint = () => { setTimeout(restore, 300); };
-    try {
-      // Typeset in place; do not move until typesetting has finished.
-      if (window.MathJax && typeof window.MathJax.typesetPromise === 'function') {
-        await window.MathJax.typesetPromise(targets);
-      }
-      if (document.fonts && document.fonts.ready) await document.fonts.ready;
-      printStyle = document.createElement('style');
-      printStyle.id = 'dh-v09-print-style';
-      printStyle.textContent = `
-        @media print {
-          @page { size:auto; margin:12mm; }
-          html.dh-native-report-print, html.dh-native-report-print body {
-            width:100% !important; min-width:0 !important; margin:0 !important;
-            padding:0 !important; background:#fff !important; color:#1e293b !important;
-          }
-          html.dh-native-report-print body > :not(#dh-native-print-root) { display:none !important; }
-          html.dh-native-report-print #dh-native-print-root {
-            display:block !important; position:static !important; width:100% !important;
-            max-width:none !important; margin:0 !important; padding:0 !important;
-            background:#fff !important; color:#1e293b !important;
-          }
-          html.dh-native-report-print #dh-native-print-root,
-          html.dh-native-report-print #dh-native-print-root * {
-            visibility:visible !important;
-          }
-          html.dh-native-report-print #dh-native-print-root #dh-summary-report-card-panel,
-          html.dh-native-report-print #dh-native-print-root #dh-full-review-report-panel {
-            display:block !important; position:static !important; width:100% !important;
-            max-width:100% !important; margin:0 0 14px !important; padding:0 !important;
-            box-shadow:none !important; background:#fff !important; color:#1e293b !important;
-          }
-          html.dh-native-report-print #dh-native-print-root .dh-review-question-header {
-            display:flex !important; flex-direction:column !important; align-items:stretch !important;
-            gap:7px !important; width:100% !important;
-          }
-          html.dh-native-report-print #dh-native-print-root .dh-review-question-status {
-            display:inline-block !important; align-self:flex-start !important;
-            width:auto !important; white-space:nowrap !important; flex:none !important;
-          }
-          html.dh-native-report-print #dh-native-print-root .dh-review-question-header .q-text {
-            display:block !important; width:100% !important; min-width:0 !important;
-            flex:none !important; overflow-wrap:break-word !important;
-          }
-          html.dh-native-report-print #dh-native-print-root .dh-report-card-review {
-            break-inside:avoid-page !important; page-break-inside:avoid !important;
-          }
-          html.dh-native-report-print #dh-native-print-root .dh-action-buttons-wrapper,
-          html.dh-native-report-print #dh-native-print-root button { display:none !important; }
-          html.dh-native-report-print #dh-native-print-root mjx-container {
-            visibility:visible !important; max-width:100% !important;
-          }
-          html.dh-native-report-print #dh-native-print-root img { max-width:100% !important; }
-        }`;
-      document.head.appendChild(printStyle);
-      printRoot = document.createElement('div');
-      printRoot.id = 'dh-native-print-root';
-      document.body.appendChild(printRoot);
-      targets.forEach(node => {
-        const placeholder = document.createComment('V09 report print placeholder');
-        node.parentNode.replaceChild(placeholder, node);
-        placeholders.push({placeholder, node});
-        printRoot.appendChild(node);
-      });
-      document.documentElement.classList.add('dh-native-report-print');
-      document.title = `${targetFileNameString}_${stamp}`;
-      window.addEventListener('afterprint', onAfterPrint);
-      // Give the browser a paint cycle with the original MathJax DOM in its print location.
-      await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
-      window.print();
-      // Fallback for browsers that do not fire afterprint. Avoid premature DOM removal.
-      setTimeout(restore, 120000);
-    } catch (error) {
-      console.error('Full Review print preparation failed:', error);
-      restore();
-      alert('Could not prepare the report for printing. Please try again.');
+  // V10: render a print-only COPY inside the same document, retaining MathJax CSS/fonts.
+  // Original report nodes stay in place; no iframe or cross-document MathJax transfer.
+  if (window.__dhPrintInProgress) return;
+  const ids = Array.isArray(printTargetElementIds) ? printTargetElementIds : [printTargetElementIds];
+  const targets = ids.map(id => document.getElementById(id)).filter(Boolean);
+  if (!targets.length) return;
+  window.__dhPrintInProgress = true;
+  const oldTitle = document.title;
+  let root = null, style = null, cleaned = false, fallback = null;
+  const restore = () => {
+    if (cleaned) return;
+    cleaned = true;
+    if (fallback) clearTimeout(fallback);
+    if (root) root.remove();
+    if (style) style.remove();
+    document.documentElement.classList.remove('dh-v10-print');
+    document.body.classList.remove('print-summary-only');
+    document.title = oldTitle;
+    window.__dhPrintInProgress = false;
+    window.removeEventListener('afterprint', onAfterPrint);
+  };
+  // Allow Chrome's print preview to snapshot the print tree before cleanup.
+  const onAfterPrint = () => setTimeout(restore, 1500);
+  try {
+    if (window.MathJax && typeof window.MathJax.typesetPromise === 'function') {
+      await window.MathJax.typesetPromise(targets);
     }
+    if (document.fonts && document.fonts.ready) await document.fonts.ready;
+    root = document.createElement('div');
+    root.id = 'dh-v10-print-root';
+    root.setAttribute('aria-hidden', 'true');
+    targets.forEach(node => {
+      const clone = node.cloneNode(true);
+      clone.removeAttribute('id'); // Avoid duplicate report IDs in the live DOM.
+      clone.classList.add('dh-v10-print-panel');
+      clone.querySelectorAll('[id]').forEach(el => el.removeAttribute('id'));
+      root.appendChild(clone);
+    });
+    document.body.appendChild(root);
+    style = document.createElement('style');
+    style.id = 'dh-v10-print-style';
+    style.textContent = `
+      @media screen { #dh-v10-print-root { display:none !important; } }
+      @media print {
+        @page { margin:12mm; size:auto; }
+        html.dh-v10-print, html.dh-v10-print body {
+          margin:0 !important; padding:0 !important; background:white !important;
+          width:100% !important; min-width:0 !important;
+        }
+        html.dh-v10-print body > :not(#dh-v10-print-root) { display:none !important; }
+        html.dh-v10-print body #dh-v10-print-root,
+        html.dh-v10-print body #dh-v10-print-root * {
+          visibility:visible !important;
+        }
+        html.dh-v10-print body #dh-v10-print-root {
+          display:block !important; position:static !important;
+          width:100% !important; max-width:none !important; margin:0 !important;
+          padding:0 !important; background:#fff !important; color:#172033 !important;
+          overflow:visible !important;
+        }
+        html.dh-v10-print #dh-v10-print-root .dh-v10-print-panel {
+          display:block !important; position:static !important; width:100% !important;
+          max-width:100% !important; margin:0 0 12px !important;
+          padding:0 !important; background:#fff !important; color:#172033 !important;
+          box-shadow:none !important; overflow:visible !important;
+        }
+        html.dh-v10-print #dh-v10-print-root .dh-review-question-header {
+          display:flex !important; flex-direction:column !important; align-items:stretch !important;
+          width:100% !important; gap:7px !important;
+        }
+        html.dh-v10-print #dh-v10-print-root .dh-review-question-status {
+          display:inline-flex !important; align-self:flex-start !important;
+          flex:none !important; width:auto !important; white-space:nowrap !important;
+        }
+        html.dh-v10-print #dh-v10-print-root .dh-review-question-header .q-text {
+          display:block !important; flex:none !important; width:100% !important;
+          min-width:0 !important; overflow-wrap:break-word !important;
+        }
+        html.dh-v10-print #dh-v10-print-root .dh-report-card-review {
+          break-inside:avoid-page !important; page-break-inside:avoid !important;
+        }
+        html.dh-v10-print #dh-v10-print-root mjx-container,
+        html.dh-v10-print #dh-v10-print-root mjx-container * {
+          visibility:visible !important;
+        }
+        html.dh-v10-print #dh-v10-print-root img { max-width:100% !important; }
+        html.dh-v10-print #dh-v10-print-root button,
+        html.dh-v10-print #dh-v10-print-root .dh-print-actions { display:none !important; }
+      }`;
+    document.head.appendChild(style);
+    document.documentElement.classList.add('dh-v10-print');
+    const d = new Date();
+    const pad = n => String(n).padStart(2,'0');
+    document.title = `${targetFileNameString}_${d.getFullYear()}${pad(d.getMonth()+1)}${pad(d.getDate())}_${pad(d.getHours())}${pad(d.getMinutes())}${pad(d.getSeconds())}`;
+    window.addEventListener('afterprint', onAfterPrint);
+    await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+    window.print();
+    // Fallback only: print preview may remain open for an extended period.
+    fallback = setTimeout(restore, 600000);
+  } catch (error) {
+    console.error('V10 report print preparation failed:', error);
+    restore();
+    alert('Could not prepare the report for printing. Please try again.');
   }
+}
 
 
 /* Original assessment script 8 */
