@@ -1658,28 +1658,26 @@ html.mh-dark [data-mode="portal"] .mh-v3-portal-note-ready {background:#113d3d; 
 @media print {[data-mode="portal"] .mh-v3-portal-note {display:none!important;}}
 
 
-/* V-01 isolated mobile Full Review card refinement (screen only). */
-@media screen and (max-width: 600px) {
-  #dh-full-review-report-panel .dh-review-question-header {
-    display:flex !important;
-    flex-direction:column !important;
-    align-items:stretch !important;
-    gap:6px !important;
-  }
-  #dh-full-review-report-panel .dh-review-question-header > .q-text {
-    min-width:0 !important;
-    flex:0 1 auto !important;
-    overflow-wrap:break-word !important;
-  }
-  #dh-full-review-report-panel .dh-review-question-status {
-    display:block !important;
-    align-self:flex-start !important;
-    flex:0 0 auto !important;
-    white-space:nowrap !important;
-    font-size:0.95rem !important;
-    line-height:1.4 !important;
-  }
-  #dh-full-review-report-panel .dh-report-card-review {
-    padding:clamp(12px,3vw,18px) !important;
-  }
+/* V-01: Full Review status occupies a separate top-right row on all screens.
+   This prevents long MathJax expressions from narrowing the status label.
+   Scoped to review cards only; assessment questions and options are unchanged. */
+#dh-full-review-report-panel .dh-report-card-review > div:first-child {
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 4px !important;
+}
+#dh-full-review-report-panel .dh-report-card-review > div:first-child > span:last-child {
+    order: -1;
+    align-self: flex-end !important;
+    flex: 0 0 auto !important;
+    white-space: nowrap !important;
+    overflow-wrap: normal !important;
+    word-break: normal !important;
+    text-align: right !important;
+    line-height: 1.4 !important;
+}
+#dh-full-review-report-panel .dh-report-card-review > div:first-child > .q-text {
+    flex: 0 1 auto !important;
+    width: 100% !important;
+    min-width: 0 !important;
 }
