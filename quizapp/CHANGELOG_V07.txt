@@ -1,0 +1,8 @@
+Mathematics Hub V3 V07 - targeted patch
+
+Core: Full Review Print eligibility 60% -> 50%. Set review status inline alignment left.
+CSS: appended screen-only top-left status badge rules, including light/dark colors.
+PDF: print iframe styles and MathJax cloning unchanged.
+Portal/chapter adapters unchanged.
+
+Source: locally available quizapp-v3-core.js and quizapp-v3-style.css. Compare with the latest GitHub versions before deploying if repository has newer changes.

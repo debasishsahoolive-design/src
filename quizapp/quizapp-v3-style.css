@@ -1656,3 +1656,91 @@ html.mh-dark [data-mode="portal"] .mh-v3-portal-note {background:#1e3348; color:
 html.mh-dark [data-mode="portal"] .mh-v3-portal-note-ready {background:#113d3d; color:#a7f3d0; border-color:#2d8a7d;}
 @media(max-width:480px) {[data-mode="portal"] .mh-v3-portal-note {border-radius:12px; font-size:11.5px;}}
 @media print {[data-mode="portal"] .mh-v3-portal-note {display:none!important;}}
+
+
+/* V-04: Full Review only — separate status row using block layout. */
+#dh-full-review-report-panel .dh-report-card-review .dh-review-question-header {
+  display: block !important;
+  width: 100% !important;
+  clear: both !important;
+}
+#dh-full-review-report-panel .dh-report-card-review .dh-review-question-status {
+  display: block !important;
+  float: none !important;
+  clear: both !important;
+  width: 100% !important;
+  box-sizing: border-box !important;
+  text-align: right !important;
+  margin-bottom: 8px !important;
+  white-space: nowrap !important;
+  word-break: normal !important;
+  overflow-wrap: normal !important;
+}
+#dh-full-review-report-panel .dh-report-card-review .dh-review-question-header > .q-text {
+  display: block !important;
+  float: none !important;
+  clear: both !important;
+  width: 100% !important;
+  min-width: 0 !important;
+  max-width: 100% !important;
+}
+
+
+/* Mathematics Hub V3 | Screen-only Full Review status layout patch
+   Safe to add after the existing quizapp-v3-style.css.
+   No changes to the PDF print iframe, MathJax, or score thresholds. */
+@media screen {
+  #dh-full-review-report-panel .dh-report-card-review .dh-review-question-header {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: stretch !important;
+    justify-content: flex-start !important;
+    gap: 0 !important;
+    width: 100% !important;
+    min-width: 0 !important;
+  }
+  #dh-full-review-report-panel .dh-report-card-review .dh-review-question-status {
+    order: -1 !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    align-self: flex-start !important;
+    flex: 0 0 auto !important;
+    float: none !important;
+    clear: both !important;
+    width: auto !important;
+    max-width: 100% !important;
+    margin: 0 0 10px !important;
+    padding: 5px 11px !important;
+    border-radius: 999px !important;
+    font-size: 13px !important;
+    line-height: 1.4 !important;
+    font-weight: 700 !important;
+    text-align: left !important;
+    white-space: nowrap !important;
+    word-break: normal !important;
+    overflow-wrap: normal !important;
+  }
+  #dh-full-review-report-panel .dh-report-card-review .dh-review-question-header > .q-text {
+    order: 0 !important;
+    display: block !important;
+    flex: none !important;
+    float: none !important;
+    clear: both !important;
+    width: 100% !important;
+    min-width: 0 !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+  }
+  #dh-full-review-report-panel .dh-report-card-review .dh-review-question-header > .q-text mjx-container {
+    max-width: 100%;
+  }
+  #dh-full-review-report-panel .dh-review-question-status { background:#f1f5f9 !important; }
+  #dh-full-review-report-panel .dh-review-question-status[style*="#16a34a"],
+  #dh-full-review-report-panel .dh-review-question-status[style*="22, 163, 74"] { background:#dcfce7 !important; color:#166534 !important; }
+  #dh-full-review-report-panel .dh-review-question-status[style*="#dc2626"],
+  #dh-full-review-report-panel .dh-review-question-status[style*="220, 38, 38"] { background:#fee2e2 !important; color:#991b1b !important; }
+  html.mh-dark #dh-full-review-report-panel .dh-review-question-status { background:#273449 !important; color:#e2e8f0 !important; }
+  html.mh-dark #dh-full-review-report-panel .dh-review-question-status[style*="#16a34a"] { background:#123c2d !important; color:#a7f3d0 !important; }
+  html.mh-dark #dh-full-review-report-panel .dh-review-question-status[style*="#dc2626"] { background:#451f2b !important; color:#fecaca !important; }
+}
+

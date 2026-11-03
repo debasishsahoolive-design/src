@@ -697,14 +697,9 @@ if (poolCount < 1 || poolCount > Math.min(30, dh_allServerQuestions.length)) {
 
       return `
         <div class="dh-report-card-review" style="padding:18px; border:1px solid #e2e8f0; border-radius:8px; margin-bottom:20px; background:#fff; page-break-inside: avoid;">
-          <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:12px;">
- 
-
-
-<div class="q-text" style="font-size:1.1em; color:#1e293b; line-height:1.5; flex:1;"><strong>Question ${ idx + 1 }:</strong> ${ q.question }</div>
- 
- 
- <span style="font-weight:bold; color:${isSkipped ? '#64748b' : evalItem?.correct ? '#16a34a' : '#dc2626'}">${isSkipped ? '○ Not Attempted' : evalItem?.correct ? '✓ Correct' : '✗ Incorrect'}</span>
+          <div class="dh-review-question-header" style="display:block !important; margin-bottom:12px; width:100%; clear:both;">
+          <span class="dh-review-question-status" style="display:block !important; float:none !important; clear:both; width:100%; box-sizing:border-box; text-align:left; margin-bottom:10px; white-space:nowrap; word-break:normal; overflow-wrap:normal; font-weight:bold; color:${isSkipped ? '#64748b' : evalItem?.correct ? '#16a34a' : '#dc2626'}">${isSkipped ? '○ Not Attempted' : evalItem?.correct ? '✓ Correct' : '✗ Incorrect'}</span>
+          <div class="q-text" style="display:block !important; float:none !important; clear:both; width:100%; min-width:0; max-width:100%; font-size:1.1em; color:#1e293b; line-height:1.5;"><strong>Question ${ idx + 1 }:</strong> ${ q.question }</div>
   </div>
           <div>${qImgsHtml}</div>
           <div>${parsedOptsHtml}</div>
@@ -722,7 +717,7 @@ if (poolCount < 1 || poolCount > Math.min(30, dh_allServerQuestions.length)) {
 
   function dh_injectAndRenderDashboardUI(rawScore, reportRowsHtml, fullResponseReviewCardsHtml, calculatedPercentage, safePrintFileName, cls, chSelected, stSelected, nameInput, emailInput, trackingMatrix, timeTakenSeconds = 0, timeTakenFormatted = "00:00:00") {
     const resultDisplay = document.getElementById("dh-quiz-result");
-    const unlockReviewPrintBtn = (calculatedPercentage >= 60) ? `<button onclick="printFullReview()" style="flex:1; padding:12px; background:#16a34a; color:white; border:none; border-radius:6px; font-weight:bold; cursor:pointer; font-size:14px; box-shadow:0 2px 4px rgba(22,163,74,0.15);">📄 Print Full Review Card</button>` : "";
+    const unlockReviewPrintBtn = (calculatedPercentage >= 50) ? `<button onclick="printFullReview()" style="flex:1; padding:12px; background:#16a34a; color:white; border:none; border-radius:6px; font-weight:bold; cursor:pointer; font-size:14px; box-shadow:0 2px 4px rgba(22,163,74,0.15);">📄 Print Full Review Card</button>` : "";
 
     resultDisplay.innerHTML = `
       <div id="dh-summary-report-card-panel" style="padding:clamp(16px,3vw,30px); border:1px solid #d7e0eb; background:#ffffff; border-radius:16px; margin-bottom:30px; box-shadow:0 12px 32px rgba(15,23,42,0.07); color:#1e293b;">
@@ -901,109 +896,98 @@ function printFullReview() {
     dh_triggerSecurePrint(['dh-summary-report-card-panel', 'dh-full-review-report-panel'], reviewFileName);
   } 
   
-function dh_triggerSecurePrint(printTargetElementIds, targetFileNameString) {
+async function dh_triggerSecurePrint(printTargetElementIds, targetFileNameString) {
+    // V-01 isolated PDF repair: retain the existing report and its rendered MathJax.
     const originalDocumentTitle = document.title;
-    const d = new Date();
-    const pad = (n) => String(n).padStart(2, '0');
-    const timestamp = d.getFullYear() + pad(d.getMonth() + 1) + pad(d.getDate()) + "_" + pad(d.getHours()) + pad(d.getMinutes()) + pad(d.getSeconds());
-
-    document.title = `${targetFileNameString}_${timestamp}`;
-
-    // Support both a single ID string or an array of IDs
     const idList = Array.isArray(printTargetElementIds) ? printTargetElementIds : [printTargetElementIds];
-    let combinedHTML = "";
+    const targets = idList.map(id => document.getElementById(id)).filter(Boolean);
+    if (!targets.length) return;
 
-    idList.forEach(id => {
-      const el = document.getElementById(id);
-      if (el) {
-        combinedHTML += el.outerHTML;
+    const d = new Date();
+    const pad = n => String(n).padStart(2, '0');
+    const timestamp = d.getFullYear() + pad(d.getMonth() + 1) + pad(d.getDate()) + '_' +
+      pad(d.getHours()) + pad(d.getMinutes()) + pad(d.getSeconds());
+    const printTitle = `${targetFileNameString}_${timestamp}`;
+
+    try {
+      // Finish rendering in the ORIGINAL document before cloning the report.
+      if (window.MathJax && typeof window.MathJax.typesetPromise === 'function') {
+        await window.MathJax.typesetPromise(targets);
       }
-    });
+      if (document.fonts && document.fonts.ready) await document.fonts.ready;
 
-    if (!combinedHTML) return;
-
-    // Use isolated iframe to prevent whole page bleed
-    let printIframe = document.getElementById('dh-print-frame');
-    if (!printIframe) {
-      printIframe = document.createElement('iframe');
-      printIframe.id = 'dh-print-frame';
-      printIframe.style.position = 'fixed';
-      printIframe.style.right = '0';
-      printIframe.style.bottom = '0';
-      printIframe.style.width = '0';
-      printIframe.style.height = '0';
-      printIframe.style.border = '0';
-      document.body.appendChild(printIframe);
-    }
-
-    const frameDoc = printIframe.contentWindow.document;
-    frameDoc.open();
-    frameDoc.write(`
-      <!DOCTYPE html>
-      <html>
-      <head>
-        <title>${document.title}</title>
+      let printIframe = document.getElementById('dh-print-frame');
+      if (!printIframe) {
+        printIframe = document.createElement('iframe');
+        printIframe.id = 'dh-print-frame';
+        printIframe.style.cssText = 'position:fixed;right:0;bottom:0;width:0;height:0;border:0;';
+        document.body.appendChild(printIframe);
+      }
+      const frameDoc = printIframe.contentDocument;
+      const safeTitle = printTitle.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+      frameDoc.open();
+      frameDoc.write(`<!DOCTYPE html><html><head><meta charset="utf-8"><title>${safeTitle}</title>
         <style>
-          body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
-            padding: 24px;
-            color: #1e293b;
-            background: #ffffff;
-          }
+          body { font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif; padding:24px; color:#1e293b; background:#fff; }
           #dh-summary-report-card-panel { max-width:100%; border:1px solid #d7e0eb !important; border-radius:12px !important; }
           .dh-report-brand-header { display:flex; align-items:center; gap:12px; padding-bottom:14px; margin-bottom:16px; border-bottom:2px solid #dbe4f0; }
           .dh-report-ds-logo { display:block; width:60px; height:60px; object-fit:contain; border:0; border-radius:0; background:transparent; margin:0; padding:0; }
           .dh-report-brand-name { margin:0 0 4px; color:#102a43; font-size:16px; font-weight:800; }
           .dh-report-brand-subtitle { margin:0; color:#64748b; font-size:10px; letter-spacing:.08em; text-transform:uppercase; }
-          table { width: 100%; border-collapse: collapse; margin-bottom: 24px; }
-          th, td { border: 1px solid #cbd5e1; padding: 8px 10px; text-align: center !important; vertical-align: middle !important; }
-          #dh-summary-report-card-panel table { table-layout: fixed !important; width: 100% !important; }
-          #dh-summary-report-card-panel table th, #dh-summary-report-card-panel table td { width: 25%; text-align: center !important; vertical-align: middle !important; }
-          th { background: #1e293b; color: #ffffff; }
-          .dh-action-buttons-wrapper, button { display: none !important; }
-          img { max-width: 100% !important; height: auto !important; display: block; margin: 14px auto; }
-          @page { margin: 15mm; }
-        </style>
-      </head>
-      <body>
-        ${combinedHTML}
-      </body>
-      </html>
-    `);
-    frameDoc.close();
+          table { width:100%; border-collapse:collapse; margin-bottom:24px; }
+          th,td { border:1px solid #cbd5e1; padding:8px 10px; text-align:center !important; vertical-align:middle !important; }
+          #dh-summary-report-card-panel table { table-layout:fixed !important; width:100% !important; }
+          #dh-summary-report-card-panel table th,#dh-summary-report-card-panel table td { width:25%; text-align:center !important; vertical-align:middle !important; }
+          th { background:#1e293b; color:#fff; }
+          .dh-action-buttons-wrapper,button { display:none !important; }
+          img { max-width:100% !important; height:auto !important; display:block; margin:14px auto; }
+          /* Print-only: keep long MathJax formulas visible and avoid mobile-width clipping. */
+          html,body { width:auto !important; max-width:100% !important; box-sizing:border-box !important; }
+          body { margin:0 !important; padding:12px !important; }
+          #dh-full-review-report-panel, .dh-report-card-review { max-width:100% !important; box-sizing:border-box !important; }
+          .dh-report-card-review { break-inside:auto !important; page-break-inside:auto !important; }
+          .dh-review-question-header { display:block !important; width:100% !important; }
+          .dh-review-question-header .q-text { display:block !important; clear:both; width:100% !important; min-width:0; overflow-wrap:break-word; }
+          .dh-review-question-status { display:block !important; clear:both; width:100% !important; text-align:right; white-space:nowrap; margin-bottom:8px; }
+          mjx-container { max-width:100% !important; }
+          mjx-container[display="true"] { overflow:visible !important; max-width:none !important; }
+          .mh-math-overflow { overflow:visible !important; }
+          @page { margin:15mm; }
+        </style></head><body></body></html>`);
+      frameDoc.close();
 
-    // Ensure MathJax renders equations inside iframe if available
-    if (printIframe.contentWindow.MathJax && printIframe.contentWindow.MathJax.typesetPromise) {
-      printIframe.contentWindow.MathJax.typesetPromise();
-    }
-
-    // Wait for images to load before printing
-    const imgs = frameDoc.querySelectorAll("img");
-    const launchPrint = () => {
-      setTimeout(() => {
-        printIframe.contentWindow.focus();
-        printIframe.contentWindow.print();
-        document.title = originalDocumentTitle;
-      }, 250);
-    };
-
-    if (imgs.length === 0) {
-      launchPrint();
-    } else {
-      let loaded = 0;
-      imgs.forEach((img) => {
-        if (img.complete) {
-          loaded++;
-          if (loaded === imgs.length) launchPrint();
-        } else {
-          img.onload = img.onerror = () => {
-            loaded++;
-            if (loaded === imgs.length) launchPrint();
-          };
+      // CommonHTML uses a dynamically injected stylesheet and font-face rules.
+      // Cloning only the report HTML loses these rules, breaking tall matrix delimiters.
+      document.querySelectorAll('style,link[rel="stylesheet"]').forEach(node => {
+        const css = node.tagName === 'STYLE' ? node.textContent || '' : '';
+        const href = node.getAttribute('href') || '';
+        if (/mjx-|MathJax|MJX-/i.test(css) || /mathjax/i.test(href) || /MJX|MathJax/i.test(node.id)) {
+          const copy = node.cloneNode(true);
+          if (copy.tagName === 'LINK') copy.href = node.href;
+          frameDoc.head.appendChild(copy);
         }
       });
+      targets.forEach(el => frameDoc.body.appendChild(el.cloneNode(true)));
+      if (frameDoc.fonts && frameDoc.fonts.ready) await frameDoc.fonts.ready;
+      await Promise.all(Array.from(frameDoc.images).map(img => {
+        if (img.complete) return Promise.resolve();
+        return new Promise(resolve => {
+          img.addEventListener('load', resolve, {once:true});
+          img.addEventListener('error', resolve, {once:true});
+          setTimeout(resolve, 10000); // Avoid blocking print forever on a missing asset.
+        });
+      }));
+      await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+      document.title = printTitle;
+      printIframe.contentWindow.focus();
+      printIframe.contentWindow.print();
+    } catch (error) {
+      console.error('Assessment PDF preparation failed:', error);
+      alert('Could not prepare the PDF report. Please try again.');
+    } finally {
+      document.title = originalDocumentTitle;
     }
-  } 
+  }
 
 
 /* Original assessment script 8 */
