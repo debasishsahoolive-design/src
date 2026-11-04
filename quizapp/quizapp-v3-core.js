@@ -851,24 +851,23 @@ function printFullReview() {
   } 
   
 async function dh_triggerSecurePrint(printTargetElementIds, targetFileNameString) {
-  // V12: print the actual, already-rendered preview panels (no clone or reconstruction).
+  // V12.2: print the actual on-screen report DOM in place, without cloning or moving MathJax.
   if (window.__dhPrintInProgress) return;
   const ids = Array.isArray(printTargetElementIds) ? printTargetElementIds : [printTargetElementIds];
   const targets = ids.map(id => document.getElementById(id)).filter(Boolean);
-  if (!targets.length) return;
+  if (targets.length !== ids.length || !targets.length) {
+    alert('The response preview is not ready for printing. Please try again.');
+    return;
+  }
   window.__dhPrintInProgress = true;
   const oldTitle = document.title;
-  const positions = [];
-  let root = null, style = null, fallback = null, cleaned = false;
+  let style = null, fallback = null, cleaned = false;
+  const marked = new Set();
   const restore = () => {
     if (cleaned) return;
     cleaned = true;
     if (fallback) clearTimeout(fallback);
-    // Move each original report panel back to its exact former DOM position.
-    positions.forEach(({node, marker}) => {
-      if (marker.parentNode) marker.parentNode.replaceChild(node, marker);
-    });
-    if (root) root.remove();
+    marked.forEach(el => el.classList.remove('dh-v12-print-ancestor', 'dh-v12-print-target'));
     if (style) style.remove();
     document.documentElement.classList.remove('dh-v12-print');
     document.body.classList.remove('print-summary-only');
@@ -878,77 +877,81 @@ async function dh_triggerSecurePrint(printTargetElementIds, targetFileNameString
   };
   const onAfterPrint = () => setTimeout(restore, 1500);
   try {
-    // Complete MathJax typesetting in the preview BEFORE moving its original nodes.
     if (window.MathJax && typeof window.MathJax.typesetPromise === 'function') {
       await window.MathJax.typesetPromise(targets);
     }
     if (document.fonts && document.fonts.ready) await document.fonts.ready;
-    root = document.createElement('div');
-    root.id = 'dh-v12-print-root';
-    root.setAttribute('aria-label', 'Print assessment response preview');
+    // Mark each report and its ancestor chain. Keep the original nodes exactly where they are.
     targets.forEach(node => {
-      const marker = document.createComment('dh-v12-original-report-position');
-      node.parentNode.insertBefore(marker, node);
-      positions.push({node, marker});
-      root.appendChild(node);
+      node.classList.add('dh-v12-print-target');
+      marked.add(node);
+      for (let parent = node.parentElement; parent && parent !== document.body; parent = parent.parentElement) {
+        parent.classList.add('dh-v12-print-ancestor');
+        marked.add(parent);
+      }
     });
-    document.body.appendChild(root);
     style = document.createElement('style');
-    style.id = 'dh-v12-print-style';
+    style.id = 'dh-v12-inplace-print-style';
     style.textContent = `
-      @media screen { #dh-v12-print-root { display:none !important; } }
       @media print {
         @page { size:A4; margin:12mm; }
         html.dh-v12-print, html.dh-v12-print body {
-          margin:0 !important; padding:0 !important; background:#fff !important;
+          background:#fff !important; color:#172033 !important;
+          margin:0 !important; padding:0 !important;
           width:100% !important; min-width:0 !important;
         }
-        html.dh-v12-print body > :not(#dh-v12-print-root) { display:none !important; }
-        /* Override legacy stylesheet: @media print { body * { visibility:hidden!important } }. */
-        html.dh-v12-print body > #dh-v12-print-root,
-        html.dh-v12-print body > #dh-v12-print-root * {
+        /* Hide everything else without removing the preview's ancestor layout. */
+        html.dh-v12-print body * { visibility:hidden !important; }
+        html.dh-v12-print body > :not(.dh-v12-print-ancestor):not(.dh-v12-print-target) {
+          display:none !important;
+        }
+        html.dh-v12-print body .dh-v12-print-ancestor > :not(.dh-v12-print-ancestor):not(.dh-v12-print-target) {
+          display:none !important;
+        }
+        html.dh-v12-print body .dh-v12-print-ancestor {
+          display:block !important; visibility:visible !important;
+          position:static !important; float:none !important;
+          width:100% !important; max-width:100% !important;
+          height:auto !important; max-height:none !important;
+          overflow:visible !important; margin:0 !important; padding:0 !important;
+          background:#fff !important; box-shadow:none !important;
+          transform:none !important;
+        }
+        html.dh-v12-print body .dh-v12-print-target,
+        html.dh-v12-print body .dh-v12-print-target * {
           visibility:visible !important;
         }
-        html.dh-v12-print body > #dh-v12-print-root {
-          display:block !important; position:static !important;
-          width:100% !important; max-width:none !important;
-          margin:0 !important; padding:0 !important;
-          overflow:visible !important; background:#fff !important;
-          color:#172033 !important;
-        }
-        html.dh-v12-print #dh-v12-print-root > #dh-summary-report-card-panel,
-        html.dh-v12-print #dh-v12-print-root > #dh-full-review-report-panel {
+        html.dh-v12-print body .dh-v12-print-target {
           display:block !important; position:static !important;
           width:100% !important; max-width:100% !important;
-          margin:0 0 12px !important; padding:0 !important;
-          background:#fff !important; color:#172033 !important;
-          box-shadow:none !important; overflow:visible !important;
+          overflow:visible !important; background:#fff !important;
+          color:#172033 !important; box-shadow:none !important;
+          margin:0 0 12px !important;
         }
-        html.dh-v12-print #dh-v12-print-root .dh-review-question-header {
+        html.dh-v12-print body .dh-v12-print-target .dh-review-question-header {
           display:flex !important; flex-direction:column !important;
           align-items:stretch !important; width:100% !important; gap:7px !important;
         }
-        html.dh-v12-print #dh-v12-print-root .dh-review-question-status {
+        html.dh-v12-print body .dh-v12-print-target .dh-review-question-status {
           display:inline-flex !important; align-self:flex-start !important;
-          flex:none !important; width:auto !important; white-space:nowrap !important;
+          width:auto !important; white-space:nowrap !important; flex:none !important;
         }
-        html.dh-v12-print #dh-v12-print-root .dh-review-question-header .q-text {
-          display:block !important; flex:none !important;
-          width:100% !important; min-width:0 !important;
-          overflow-wrap:break-word !important;
+        html.dh-v12-print body .dh-v12-print-target .dh-review-question-header .q-text {
+          display:block !important; width:100% !important;
+          min-width:0 !important; overflow-wrap:break-word !important;
         }
-        html.dh-v12-print #dh-v12-print-root .dh-report-card-review {
+        html.dh-v12-print body .dh-v12-print-target .dh-report-card-review {
           break-inside:avoid-page !important; page-break-inside:avoid !important;
         }
-        html.dh-v12-print #dh-v12-print-root mjx-container {
-          overflow:visible !important; max-width:none !important;
+        html.dh-v12-print body .dh-v12-print-target mjx-container,
+        html.dh-v12-print body .dh-v12-print-target .mh-math-overflow {
+          overflow:visible !important;
         }
-        html.dh-v12-print #dh-v12-print-root .mh-math-overflow {
-          overflow:visible !important; max-width:none !important;
+        html.dh-v12-print body .dh-v12-print-target img { max-width:100% !important; }
+        html.dh-v12-print body .dh-v12-print-target button,
+        html.dh-v12-print body .dh-v12-print-target .dh-print-actions {
+          display:none !important;
         }
-        html.dh-v12-print #dh-v12-print-root img { max-width:100% !important; }
-        html.dh-v12-print #dh-v12-print-root button,
-        html.dh-v12-print #dh-v12-print-root .dh-print-actions { display:none !important; }
       }`;
     document.head.appendChild(style);
     document.documentElement.classList.add('dh-v12-print');
@@ -960,9 +963,9 @@ async function dh_triggerSecurePrint(printTargetElementIds, targetFileNameString
     window.print();
     fallback = setTimeout(restore, 600000);
   } catch (error) {
-    console.error('V12 preview-based print preparation failed:', error);
+    console.error('V12.2 in-place preview printing failed:', error);
     restore();
-    alert('Could not prepare the report for printing. Please try again.');
+    alert('Could not prepare the response preview for printing. Please try again.');
   }
 }
 
