@@ -1,14 +1,15 @@
-Mathematics Hub V13.4 — MathJax expression verification fix
+Mathematics Hub V13.5 — PDF pagination-only test
 
-Replace only quizapp/mh-v13-isolated-print.js with the included file.
-Update the existing Blogger script URL to the new GitHub commit hash.
-Do not add a second adapter. Do not change Core JS, CSS, or theme MathJax.
+Replace the existing quizapp/mh-v13-isolated-print.js with this file.
+Update the ONE existing script reference to the new GitHub commit.
+Do not load V13.4 and V13.5 simultaneously.
 
-Changes from V13.3:
-- Counts only top-level MathJax containers (avoids nested container double-counting).
-- Wraps each source expression in a dedicated slot.
-- Checks that every slot has exactly one rendered MathJax container and no MathJax error.
-- Leaves the CHTML engine, report styling, printing workflow and quiz logic intact.
+Changes:
+- Allows long review cards to split across pages instead of reserving a full page.
+- Tries to keep question text, individual options, MathJax expressions and explanations intact.
+- Keeps the working V13.4 CHTML typesetting and validation workflow unchanged.
 
-Validation: syntax check only; test a matrix-rich Full Review on desktop and mobile.
-If a warning remains, report the exact counts. Do not bypass the warning.
+No changes to Core JS, Apps Script, theme or quiz CSS.
+
+Testing: inspect 3x3 matrix questions, question/option alignment and page breaks in Chrome Print Preview.
+CSS pagination is browser-dependent; this patch is not browser-verified.

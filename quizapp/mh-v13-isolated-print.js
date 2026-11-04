@@ -1,10 +1,10 @@
-/* Mathematics Hub V13.4 — isolated report printing with MathJax 3 CHTML.
+/* Mathematics Hub V13.5 — pagination refinement for isolated report printing with MathJax 3 CHTML.
  * Adapter only. Test privately; no scoring or backend changes.
  */
 (function () {
   'use strict';
-  if (window.__MH_V134_PRINT_INSTALLED__) return;
-  window.__MH_V134_PRINT_INSTALLED__ = true;
+  if (window.__MH_V135_PRINT_INSTALLED__) return;
+  window.__MH_V135_PRINT_INSTALLED__ = true;
 
   const MATHJAX_URL = 'https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js';
   const CSS = `
@@ -16,7 +16,26 @@
     .mh-print-panel {display:block!important;visibility:visible!important;width:100%!important;max-width:100%!important;margin:0 0 16px!important;padding:0!important;background:#fff!important;color:#172033!important;box-shadow:none!important}
     .dh-report-brand-header {display:flex!important;align-items:center!important;gap:12px!important}
     .dh-report-ds-logo,.dh-report-brand-header img {width:64px!important;height:64px!important;max-width:64px!important;max-height:64px!important;object-fit:contain!important;flex:0 0 64px!important;margin:0!important}
-    .dh-report-card-review {break-inside:avoid-page;page-break-inside:avoid;margin-bottom:12px!important;background:#fff!important;color:#172033!important}
+    /* V13.5: long review cards must be allowed to continue onto the next page.
+       Avoiding a whole card causes excessive gaps and unpredictable pagination. */
+    .dh-report-card-review {break-inside:auto!important;page-break-inside:auto!important;margin-bottom:12px!important;background:#fff!important;color:#172033!important}
+    /* Keep short units together, but allow oversized matrices/content to flow. */
+    .dh-report-card-review > :first-child {break-after:avoid-page;page-break-after:avoid}
+    .dh-report-card-review .q-text {break-inside:avoid-page;page-break-inside:avoid}
+    .dh-report-card-review mjx-container {break-inside:avoid-page;page-break-inside:avoid}
+    .dh-report-card-review mjx-container[display='true'] {break-inside:avoid-page;page-break-inside:avoid}
+    .dh-report-card-review li, .dh-report-card-review .option, .dh-report-card-review .quiz-option,
+    .dh-report-card-review .dh-option, .dh-report-card-review .dh-report-option {
+      break-inside:avoid-page;page-break-inside:avoid;
+    }
+    .dh-report-card-review h1,.dh-report-card-review h2,.dh-report-card-review h3,
+    .dh-report-card-review h4 {break-after:avoid-page;page-break-after:avoid}
+    .dh-report-card-review .explanation,.dh-report-card-review .dh-explanation,
+    .dh-report-card-review .solution {break-inside:avoid-page;page-break-inside:avoid}
+    .dh-report-card-review table tr {break-inside:avoid-page;page-break-inside:avoid}
+    /* Avoid leaving the review section title alone at the bottom of a page. */
+    #dh-full-review-report-panel > h1,#dh-full-review-report-panel > h2,
+    #dh-full-review-report-panel > h3 {break-after:avoid-page;page-break-after:avoid}
     .q-text {overflow-wrap:break-word;min-width:0}
     img {max-width:100%;height:auto}
     mjx-container {color:#111827!important;visibility:visible!important}
@@ -124,7 +143,7 @@
       await waitForAssets(doc);
       if(!popup.closed){popup.focus();popup.print()}
     }catch(err){
-      console.error('MH V13.4 print error:',err);
+      console.error('MH V13.5 print error:',err);
       if(!popup.closed){const msg=doc.createElement('p');msg.style.cssText='color:#b91c1c;font:600 15px/1.5 Arial;padding:16px;border:1px solid #fca5a5;';msg.textContent=`PDF printing stopped to prevent an incomplete mathematics report: ${err.message}`;doc.body.prepend(msg)}
     }
   }
