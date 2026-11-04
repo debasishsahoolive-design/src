@@ -1719,3 +1719,19 @@ html.mh-dark [data-mode="portal"] .mh-v3-portal-note-ready {background:#113d3d; 
   html.mh-dark #dh-full-review-report-panel .dh-status-incorrect { background:#4c1d26 !important; color:#fecaca !important; }
   html.mh-dark #dh-full-review-report-panel .dh-status-skipped { background:#26364b !important; color:#cbd5e1 !important; }
 }
+/* Mathematics Hub V11 — experimental print-only MathJax bracket correction.
+   Append after the existing stylesheet. No quiz logic or print visibility changes.
+   Verify in a newly generated Full Review PDF before deployment. */
+@media print {
+  #dh-full-review-report-panel .dh-report-card-review mjx-container,
+  #dh-full-review-report-panel .dh-report-card-review mjx-container[display="true"],
+  #dh-full-review-report-panel .dh-report-card-review .mh-math-overflow {
+    overflow: visible !important;
+    max-height: none !important;
+  }
+
+  /* Allow tall inline matrices and their stretchy delimiters to paint fully. */
+  #dh-full-review-report-panel .dh-report-card-review mjx-container:not([display="true"]) {
+    vertical-align: baseline;
+  }
+}
