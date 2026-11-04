@@ -1,10 +1,10 @@
-/* Mathematics Hub V13.3 — isolated report printing with MathJax 3 CHTML.
+/* Mathematics Hub V13.4 — isolated report printing with MathJax 3 CHTML.
  * Adapter only. Test privately; no scoring or backend changes.
  */
 (function () {
   'use strict';
-  if (window.__MH_V133_PRINT_INSTALLED__) return;
-  window.__MH_V133_PRINT_INSTALLED__ = true;
+  if (window.__MH_V134_PRINT_INSTALLED__) return;
+  window.__MH_V134_PRINT_INSTALLED__ = true;
 
   const MATHJAX_URL = 'https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js';
   const CSS = `
@@ -49,15 +49,23 @@
   function removeActions(panel) {
     panel.querySelectorAll('button,.dh-print-actions,.print-hide,[onclick*="print"],[onclick*="reload"]').forEach(el=>el.remove());
   }
+  function topLevelMath(root) {
+    return Array.from(root.querySelectorAll('mjx-container')).filter(el => !el.parentElement?.closest('mjx-container'));
+  }
   function insertOriginalMath(source,clone,items) {
-    const from=Array.from(source.querySelectorAll('mjx-container'));
-    const to=Array.from(clone.querySelectorAll('mjx-container'));
+    // MathJax can contain nested containers. Count only top-level expressions.
+    const from=topLevelMath(source);
+    const to=topLevelMath(clone);
     if(from.length!==to.length) throw Error('MathJax element counts differ between source and report.');
     for(let i=0;i<from.length;i++) {
       const raw=sourceFor(from[i],items);
       if(!raw) throw Error(`Original mathematics unavailable for expression ${i+1}.`);
       // Text node prevents accidental HTML injection from source TeX.
-      to[i].replaceWith(clone.ownerDocument.createTextNode(raw));
+      const slot=clone.ownerDocument.createElement('span');
+      slot.className='mh-math-slot';
+      slot.dataset.mhMathIndex=String(i+1);
+      slot.textContent=raw;
+      to[i].replaceWith(slot);
     }
     return from.length;
   }
@@ -108,14 +116,15 @@
       if(expected) {
         await loadMathJax(popup,doc);
         await popup.MathJax.typesetPromise(copies);
-        const rendered=doc.querySelectorAll('.mh-print-panel mjx-container').length;
-        if(rendered!==expected) throw Error(`MathJax rendering incomplete: expected ${expected}, found ${rendered}.`);
+        const slots=Array.from(doc.querySelectorAll('.mh-print-panel .mh-math-slot'));
+        const rendered=slots.filter(slot => topLevelMath(slot).length === 1 && !slot.querySelector('mjx-merror')).length;
+        if(slots.length!==expected || rendered!==expected) throw Error(`MathJax rendering incomplete: expected ${expected}, found ${rendered} (slots ${slots.length}).`);
         if(doc.querySelector('.mh-print-panel mjx-merror')) throw Error('MathJax reported a mathematical rendering error.');
       }
       await waitForAssets(doc);
       if(!popup.closed){popup.focus();popup.print()}
     }catch(err){
-      console.error('MH V13.3 print error:',err);
+      console.error('MH V13.4 print error:',err);
       if(!popup.closed){const msg=doc.createElement('p');msg.style.cssText='color:#b91c1c;font:600 15px/1.5 Arial;padding:16px;border:1px solid #fca5a5;';msg.textContent=`PDF printing stopped to prevent an incomplete mathematics report: ${err.message}`;doc.body.prepend(msg)}
     }
   }
