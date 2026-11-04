@@ -904,6 +904,11 @@ async function dh_triggerSecurePrint(printTargetElementIds, targetFileNameString
           width:100% !important; min-width:0 !important;
         }
         html.dh-v12-print body > :not(#dh-v12-print-root) { display:none !important; }
+        /* Override legacy stylesheet: @media print { body * { visibility:hidden!important } }. */
+        html.dh-v12-print body > #dh-v12-print-root,
+        html.dh-v12-print body > #dh-v12-print-root * {
+          visibility:visible !important;
+        }
         html.dh-v12-print body > #dh-v12-print-root {
           display:block !important; position:static !important;
           width:100% !important; max-width:none !important;
