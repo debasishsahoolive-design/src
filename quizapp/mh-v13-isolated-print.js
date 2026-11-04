@@ -1,10 +1,10 @@
-/* Mathematics Hub V13.5 — pagination refinement for isolated report printing with MathJax 3 CHTML.
+/* Mathematics Hub V13.6 — adaptive summary and review page break for isolated report printing with MathJax 3 CHTML.
  * Adapter only. Test privately; no scoring or backend changes.
  */
 (function () {
   'use strict';
-  if (window.__MH_V135_PRINT_INSTALLED__) return;
-  window.__MH_V135_PRINT_INSTALLED__ = true;
+  if (window.__MH_V136_PRINT_INSTALLED__) return;
+  window.__MH_V136_PRINT_INSTALLED__ = true;
 
   const MATHJAX_URL = 'https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js';
   const CSS = `
@@ -36,6 +36,21 @@
     /* Avoid leaving the review section title alone at the bottom of a page. */
     #dh-full-review-report-panel > h1,#dh-full-review-report-panel > h2,
     #dh-full-review-report-panel > h3 {break-after:avoid-page;page-break-after:avoid}
+
+    /* V13.6: print-only summary typography and two-table layout. */
+    .mh-summary-print {font-size:12px!important;line-height:1.3!important}
+    .mh-summary-print .dh-report-brand-header {margin-bottom:5px!important}
+    .mh-summary-print .dh-report-ds-logo,.mh-summary-print .dh-report-brand-header img {width:48px!important;height:48px!important;max-width:48px!important;max-height:48px!important;flex-basis:48px!important}
+    .mh-summary-print h1,.mh-summary-print h2,.mh-summary-print h3 {margin:5px 0!important;line-height:1.2!important}
+    .mh-summary-print p {margin:3px 0!important}
+    .mh-summary-print table {width:100%!important;border-collapse:collapse!important;table-layout:fixed!important;font-size:10.5px!important;line-height:1.2!important}
+    .mh-summary-print th,.mh-summary-print td {padding:3px 4px!important;vertical-align:middle!important;overflow-wrap:anywhere}
+    .mh-summary-print tr {break-inside:avoid-page!important;page-break-inside:avoid!important}
+    .mh-summary-print .mh-summary-pair {display:grid!important;grid-template-columns:minmax(0,1fr) minmax(0,1fr)!important;gap:9px!important;align-items:start!important;width:100%!important}
+    .mh-summary-print .mh-summary-pair table {min-width:0!important;font-size:9.5px!important}
+    .mh-summary-print .mh-summary-pair th,.mh-summary-print .mh-summary-pair td {padding:3px 2px!important}
+    .mh-review-print {break-before:page!important;page-break-before:always!important}
+    @media print {.mh-review-print {break-before:page!important;page-break-before:always!important}}
     .q-text {overflow-wrap:break-word;min-width:0}
     img {max-width:100%;height:auto}
     mjx-container {color:#111827!important;visibility:visible!important}
@@ -88,6 +103,47 @@
     }
     return from.length;
   }
+
+  // Only transform a recognizable four-column question-result table. Other
+  // tables (scores, student metadata, etc.) are left entirely untouched.
+  function adaptSummaryTable(panel) {
+    panel.classList.add('mh-summary-print');
+    const tables=Array.from(panel.querySelectorAll('table'));
+    const candidates=tables.map(table=>{
+      const rows=Array.from(table.rows);
+      if(rows.length<2) return null;
+      const first=rows[0];
+      if(first.cells.length!==4) return null;
+      const headings=Array.from(first.cells).map(c=>c.textContent.trim().toLowerCase());
+      const headingText=headings.join(' ');
+      if(!/(?:question|q\.?\s*(?:no|number)?|q\s*#)/i.test(headings[0])) return null;
+      if(!/(?:answer|choice|response|selected|your)/.test(headingText)) return null;
+      if(!/(?:key|correct|official)/.test(headingText)) return null;
+      if(!/(?:status|result)/.test(headingText)) return null;
+      const bodyRows=rows.slice(1).filter(r=>r.cells.length===4 && /^\s*(?:q(?:uestion)?\s*[.:-]?\s*)?\d{1,2}\s*[.):]?\s*$/i.test(r.cells[0].textContent));
+      if(bodyRows.length!==rows.length-1) return null;
+      return {table,rows,bodyRows};
+    }).filter(Boolean);
+    if(candidates.length!==1) {
+      console.info('MH V13.6: summary table structure not recognized; preserving original layout.');
+      return;
+    }
+    const {table,rows,bodyRows}=candidates[0];
+    const count=bodyRows.length;
+    if(count<=15 || count>30) return;
+    const doc=panel.ownerDocument;
+    const wrap=doc.createElement('div');wrap.className='mh-summary-pair';
+    const middle=Math.ceil(count/2);
+    for(const section of [bodyRows.slice(0,middle),bodyRows.slice(middle)]) {
+      const half=doc.createElement('table');
+      const head=doc.createElement('thead');head.appendChild(rows[0].cloneNode(true));half.appendChild(head);
+      const body=doc.createElement('tbody');
+      section.forEach(row=>body.appendChild(row.cloneNode(true)));
+      half.appendChild(body);wrap.appendChild(half);
+    }
+    table.replaceWith(wrap);
+  }
+
   async function waitForAssets(doc) {
     await Promise.all(Array.from(doc.images).map(img=>img.complete?Promise.resolve():new Promise(resolve=>{img.onload=resolve;img.onerror=resolve;setTimeout(resolve,5000)})));
     if(doc.fonts?.ready) await Promise.race([doc.fonts.ready,new Promise(resolve=>setTimeout(resolve,7000))]);
@@ -125,7 +181,10 @@
       const copies=[];let expected=0;
       for(const panel of panels){
         const clone=doc.importNode(panel,true);clone.removeAttribute('id');clone.classList.add('mh-print-panel','tex2jax_process');removeActions(clone);
-        expected+=insertOriginalMath(panel,clone,items);copies.push(clone);
+        expected+=insertOriginalMath(panel,clone,items);
+        if(panel.id==='dh-summary-report-card-panel') adaptSummaryTable(clone);
+        if(panel.id==='dh-full-review-report-panel') clone.classList.add('mh-review-print');
+        copies.push(clone);
       }
       doc.body.replaceChildren();
       const style=doc.createElement('style');style.textContent=CSS;doc.head.appendChild(style);
@@ -143,7 +202,7 @@
       await waitForAssets(doc);
       if(!popup.closed){popup.focus();popup.print()}
     }catch(err){
-      console.error('MH V13.5 print error:',err);
+      console.error('MH V13.6 print error:',err);
       if(!popup.closed){const msg=doc.createElement('p');msg.style.cssText='color:#b91c1c;font:600 15px/1.5 Arial;padding:16px;border:1px solid #fca5a5;';msg.textContent=`PDF printing stopped to prevent an incomplete mathematics report: ${err.message}`;doc.body.prepend(msg)}
     }
   }
