@@ -1,10 +1,10 @@
-/* Mathematics Hub V13.6 — adaptive summary and review page break for isolated report printing with MathJax 3 CHTML.
+/* Mathematics Hub V13.6.1 — adaptive summary and review page break for isolated report printing with MathJax 3 CHTML.
  * Adapter only. Test privately; no scoring or backend changes.
  */
 (function () {
   'use strict';
-  if (window.__MH_V136_PRINT_INSTALLED__) return;
-  window.__MH_V136_PRINT_INSTALLED__ = true;
+  if (window.__MH_V1361_PRINT_INSTALLED__) return;
+  window.__MH_V1361_PRINT_INSTALLED__ = true;
 
   const MATHJAX_URL = 'https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js';
   const CSS = `
@@ -48,6 +48,10 @@
     .mh-summary-print tr {break-inside:avoid-page!important;page-break-inside:avoid!important}
     .mh-summary-print .mh-summary-pair {display:grid!important;grid-template-columns:minmax(0,1fr) minmax(0,1fr)!important;gap:9px!important;align-items:start!important;width:100%!important}
     .mh-summary-print .mh-summary-pair table {min-width:0!important;font-size:9.5px!important}
+    .mh-summary-print .mh-summary-pair th:nth-child(1),.mh-summary-print .mh-summary-pair td:nth-child(1){width:14%!important}
+    .mh-summary-print .mh-summary-pair th:nth-child(2),.mh-summary-print .mh-summary-pair td:nth-child(2){width:23%!important}
+    .mh-summary-print .mh-summary-pair th:nth-child(3),.mh-summary-print .mh-summary-pair td:nth-child(3){width:19%!important}
+    .mh-summary-print .mh-summary-pair th:nth-child(4),.mh-summary-print .mh-summary-pair td:nth-child(4){width:44%!important}
     .mh-summary-print .mh-summary-pair th,.mh-summary-print .mh-summary-pair td {padding:3px 2px!important}
     .mh-review-print {break-before:page!important;page-break-before:always!important}
     @media print {.mh-review-print {break-before:page!important;page-break-before:always!important}}
@@ -116,7 +120,7 @@
       if(first.cells.length!==4) return null;
       const headings=Array.from(first.cells).map(c=>c.textContent.trim().toLowerCase());
       const headingText=headings.join(' ');
-      if(!/(?:question|q\.?\s*(?:no|number)?|q\s*#)/i.test(headings[0])) return null;
+      if(!/(?:question|display|q\.?\s*(?:no|number)?|q\s*#)/i.test(headings[0])) return null;
       if(!/(?:answer|choice|response|selected|your)/.test(headingText)) return null;
       if(!/(?:key|correct|official)/.test(headingText)) return null;
       if(!/(?:status|result)/.test(headingText)) return null;
@@ -125,7 +129,7 @@
       return {table,rows,bodyRows};
     }).filter(Boolean);
     if(candidates.length!==1) {
-      console.info('MH V13.6: summary table structure not recognized; preserving original layout.');
+      console.info('MH V13.6.1: summary table structure not recognized; preserving original layout.');
       return;
     }
     const {table,rows,bodyRows}=candidates[0];
@@ -142,6 +146,7 @@
       half.appendChild(body);wrap.appendChild(half);
     }
     table.replaceWith(wrap);
+    console.info(`MH V13.6.1: summary arranged into two tables (${middle} + ${count-middle}).`);
   }
 
   async function waitForAssets(doc) {
@@ -202,7 +207,7 @@
       await waitForAssets(doc);
       if(!popup.closed){popup.focus();popup.print()}
     }catch(err){
-      console.error('MH V13.6 print error:',err);
+      console.error('MH V13.6.1 print error:',err);
       if(!popup.closed){const msg=doc.createElement('p');msg.style.cssText='color:#b91c1c;font:600 15px/1.5 Arial;padding:16px;border:1px solid #fca5a5;';msg.textContent=`PDF printing stopped to prevent an incomplete mathematics report: ${err.message}`;doc.body.prepend(msg)}
     }
   }
