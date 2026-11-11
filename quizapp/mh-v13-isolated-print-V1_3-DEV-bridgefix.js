@@ -17,8 +17,8 @@
     .mh-print-toolbar {padding:10px;background:#eef6ff;border:1px solid #bfdbfe;margin-bottom:12px}
     .mh-print-toolbar button {background:#075985;color:#fff;padding:8px 12px;border:0;cursor:pointer}
     .mh-print-panel {display:block!important;visibility:visible!important;width:100%!important;max-width:100%!important;margin:0 0 16px!important;padding:0!important;background:#fff!important;color:#172033!important;box-shadow:none!important}
-    .dh-report-brand-header {display:flex!important;align-items:center!important;gap:12px!important}
-    .dh-report-ds-logo,.dh-report-brand-header img {width:64px!important;height:64px!important;max-width:64px!important;max-height:64px!important;object-fit:contain!important;flex:0 0 64px!important;margin:0!important}
+    .dh-report-brand-header {display:flex!important;flex-direction:column!important;align-items:center!important;justify-content:center!important;gap:0!important;margin:0 0 12px!important;padding:0!important;text-align:center!important}
+    .dh-report-ds-logo,.dh-report-brand-header img {display:block!important;width:230px!important;height:auto!important;max-width:85%!important;max-height:none!important;object-fit:contain!important;flex:none!important;margin:0 auto!important}
     /* V13.5: long review cards must be allowed to continue onto the next page.
        Avoiding a whole card causes excessive gaps and unpredictable pagination. */
     .dh-report-card-review {break-inside:auto!important;page-break-inside:auto!important;margin-bottom:12px!important;background:#fff!important;color:#172033!important}
@@ -42,8 +42,8 @@
 
     /* V13.6: print-only summary typography and two-table layout. */
     .mh-summary-print {font-size:12px!important;line-height:1.3!important}
-    .mh-summary-print .dh-report-brand-header {margin-bottom:5px!important}
-    .mh-summary-print .dh-report-ds-logo,.mh-summary-print .dh-report-brand-header img {width:48px!important;height:48px!important;max-width:48px!important;max-height:48px!important;flex-basis:48px!important}
+    .mh-summary-print .dh-report-brand-header {margin-bottom:12px!important}
+    .mh-summary-print .dh-report-ds-logo,.mh-summary-print .dh-report-brand-header img {width:230px!important;height:auto!important;max-width:85%!important;max-height:none!important;flex:none!important}
     .mh-summary-print h1,.mh-summary-print h2,.mh-summary-print h3 {margin:5px 0!important;line-height:1.2!important}
     .mh-summary-print p {margin:3px 0!important}
     .mh-summary-print table {width:100%!important;border-collapse:collapse!important;table-layout:fixed!important;font-size:10.5px!important;line-height:1.2!important}
@@ -97,10 +97,14 @@
     logo.setAttribute('src', REPORT_LOGO_URL);
     logo.setAttribute('alt', 'Mathematics Hub DS logo');
     logo.setAttribute('referrerpolicy', 'no-referrer');
-    logo.addEventListener('error', () => {
-      // Keep the existing report logo rather than printing an empty image.
-      if (previousSrc) logo.setAttribute('src', previousSrc);
+    // Print header: homepage logo only; existing Assessment Summary stays below.
+    // The original on-screen header remains untouched.
+    const logoOnly = logo.cloneNode(true);
+    header.replaceChildren(logoOnly);
+    logoOnly.addEventListener('error', () => {
+      if (previousSrc) logoOnly.setAttribute('src', previousSrc);
     }, { once: true });
+
   }
 
   function removeActions(panel) {
