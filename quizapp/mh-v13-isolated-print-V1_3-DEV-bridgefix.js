@@ -6,6 +6,9 @@
   if (window.__MH_V1361_PRINT_INSTALLED__) return;
   window.__MH_V1361_PRINT_INSTALLED__ = true;
 
+  // Approved homepage light-mode logo reference; print copies only.
+  // Check the asset visually before promoting this DEV change to production.
+  const REPORT_LOGO_URL = 'https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEi3ONJWQovB4I871oWpfcqXRYJuU_g30ObriWn8So_7wgHWQXW6mJYO_IdS_ysQ3ENBQGc-ZknlCELvBODyGywJ7teXstdo0eZJusPM5BSSRw50X77EcjLJoe5WQfkEMvei9ZynS0pzAv2UFQZzJM33bI8qgAAcEZpjRiHeVCiFl2DGgd7qKk5N_qkre9z-/s1600/image.png';
   const MATHJAX_URL = 'https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js';
   const CSS = `
     @page { size:A4; margin:12mm; }
@@ -84,6 +87,22 @@
     if(mml) return new XMLSerializer().serializeToString(mml);
     return null;
   }
+  function synchronizeReportLogo(panel) {
+    // Update only the cloned print panel; never mutate the live assessment page.
+    const header = panel.querySelector('.dh-report-brand-header');
+    if (!header) return;
+    const logo = header.querySelector('img.dh-report-ds-logo, img');
+    if (!logo) return;
+    const previousSrc = logo.getAttribute('src');
+    logo.setAttribute('src', REPORT_LOGO_URL);
+    logo.setAttribute('alt', 'Mathematics Hub DS logo');
+    logo.setAttribute('referrerpolicy', 'no-referrer');
+    logo.addEventListener('error', () => {
+      // Keep the existing report logo rather than printing an empty image.
+      if (previousSrc) logo.setAttribute('src', previousSrc);
+    }, { once: true });
+  }
+
   function removeActions(panel) {
     panel.querySelectorAll('button,.dh-print-actions,.print-hide,[onclick*="print"],[onclick*="reload"]').forEach(el=>el.remove());
   }
@@ -185,7 +204,7 @@
       const items=mathItems();
       const copies=[];let expected=0;
       for(const panel of panels){
-        const clone=doc.importNode(panel,true);clone.removeAttribute('id');clone.classList.add('mh-print-panel','tex2jax_process');removeActions(clone);
+        const clone=doc.importNode(panel,true);clone.removeAttribute('id');clone.classList.add('mh-print-panel','tex2jax_process');removeActions(clone);synchronizeReportLogo(clone);
         expected+=insertOriginalMath(panel,clone,items);
         if(panel.id==='dh-summary-report-card-panel') adaptSummaryTable(clone);
         if(panel.id==='dh-full-review-report-panel') clone.classList.add('mh-review-print');
